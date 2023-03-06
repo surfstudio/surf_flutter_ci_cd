@@ -1,0 +1,333 @@
+//Библиотека общих классов
+@Library("DevOps-CI-CD-Library@master") _
+//--------------------------------------------------------------------------------------------------------------------------------------------------
+pipeline {
+    options {     
+        // Указываем дни и кол-во хранимых сборок;
+        buildDiscarder(logRotator(daysToKeepStr: '10', numToKeepStr: '30'))
+
+        // Запрет запуска сборки при перезапуске контролёра ;
+        disableResume()
+    }
+    agent {
+        // Указываем где должна собираться сборка (только для steps где явно не указан label);
+        // Актуально для сборки андроид, ios labels задаётся environment
+        label 'android'                                                                            
+    }
+    parameters {
+        string(name: 'sourceBranch',      defaultValue: '', description: 'Ветка с pr, обязательный параметр')
+        string(name: 'destinationBranch', defaultValue: '', description: 'Ветка, в которую будет мержиться пр, обязательный параметр')
+    }
+    environment {
+        //Метка сборочной ноды для сборки iOS
+        IOS_LABEL = "ios-13"
+
+        //Креды Github Builder. Находятся в Jenkins -> Manage Credentials.
+        git_cred   = 'jenkins-surf-builder-token'
+
+        //Версия ruby
+        rvm_version = '2.7.4'
+
+        //Образ докера на DockerHub в котором собираем проект. Пример: surfstudio/flutter:2.2.2
+        docker_img = 'nexus.surfstudio.ru/flutter:3.0.1-android'
+
+        //Обязательно указывваем репу, в  противном случае не будет запускаться с параметрами.
+        repoUrl    = 'https://github.com/surfstudio/love-republic-flutter' 
+
+        //Ключ и его значение, для сборки проекта, если нет оставить temp_*.
+        ANDROID_RELEASE_KEYSTORE            = 'temp_flutter_release_keystore'
+        ANDROID_RELEASE_KEYSTORE_PROPERTIES = 'temp_flutter_release_keystore.properties'
+    }
+    //Тригер сборки и переменные прилетевшие с вебхука;
+    triggers { 
+        GenericTrigger(
+        genericVariables: [
+            [key: 'sourceBranch', value: '$.pull_request.head.ref'],
+            [key: 'destinationBranch', value: '$.pull_request.base.ref'],
+            [key: 'repoUrl', value: '$.repository.html_url'],
+            [key: 'targetBranchChanged', value: '$.target_branch.changed']
+        ],
+        causeString: 'Triggered by Github',
+        //Regexp для фильтрации запуска
+        regexpFilterText: ("\$repoUrl"),
+        //Указать репу проекта 
+        regexpFilterExpression: ("https://github.com/surfstudio/love-republic-flutter"),
+        printContributedVariables: true,
+        printPostContent: true
+        )
+    }
+//----------------------------------------------------------Init-----------------------------------------------------------------------------------
+   stages {
+        stage('Init') {
+            steps {
+                //Отправляем статус в GitHub
+                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                script {
+                    //Отмечаем где собираем проект
+                    currentBuild.description = "Building on ${env.NODE_NAME}, sourceBranch: ${env.sourceBranch}, destinationBranch: ${env.destinationBranch}"
+                }
+            }
+            post {
+                always {
+                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                }
+            }  
+        }
+//----------------------------------------------------------Checkout-------------------------------------------------------------------------------
+        stage('Checkout'){
+            steps {
+                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                script {
+                    try {
+                        sh "git reset --merge"
+                        sh "git reset"
+                        sh "git checkout ."
+                        sh "git clean -fdx"
+                    } catch (Exception ex) {
+                        echo "^^^^ Exception occurred: " + ex.toString()
+                    }
+                }
+                // Делаем Checkout;
+                git url: "${env.repoUrl}",                                                                                   
+                    credentialsId: "${env.git_cred}",
+                    branch: "${env.sourceBranch}"
+            }
+            post {
+                always {
+                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                }
+            }   
+        }
+//----------------------------------------------------------PreMerge-------------------------------------------------------------------------------
+        stage('PreMerge') {
+            steps {
+                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                script {
+                    sh "git merge origin/${env.destinationBranch} --no-ff --no-commit"
+                }
+            }
+            post {
+                always {
+                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                }
+            }  
+        }        
+//----------------------------------------------------------Check iOS need to build--------------------------------------------------------------------------------
+        stage('Check iOS need to build') {
+            when {
+                //Останавливаем stage Android, если запушен при merge request;
+                environment name: "targetBranchChanged", value: null
+            }            
+            steps {
+                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                script {
+                    //Выводим список изменений относительно ветки в которую мержимся;
+                    result  = sh (script: "git log --no-merges --first-parent --oneline --name-only origin/${env.destinationBranch}..${env.sourceBranch}", returnStdout: true)
+                    echo result
+
+                    //Проверяем есть ли изменения в файле pubspec.yaml и папке ios;
+                    pubSpecChanged  = result.contains('pubspec.yaml')
+                    iosFilesChanged = result.contains('ios/')
+
+                    if (pubSpecChanged || iosFilesChanged) {
+                        echo 'Есть изменений, будет собрана iOS ветка'
+                        ios_stage = true
+                    } else {
+                        echo 'Изменений в iOS нет, сборка не требуется'
+                        ios_stage = false
+                    }
+                }
+            }
+            post {
+                always {
+                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                }
+            }  
+        }
+//----------------------------------------------------------Parallel-----------------------------------------------------------------------------------------------
+//----------------------------------------------------------Android------------------------------------------------------------------------------------------------
+        stage("Parallel") {
+            parallel {
+                stage("Android") {
+                    agent {
+                        docker {
+                            registryUrl "https://nexus.surfstudio.ru/"
+                            registryCredentialsId "nexus.surfstudio.ru"
+                            args "-v /home/jenkins/.gitconfig:/etc/gitconfig:rw,z"
+                            image "${env.docker_img}"
+                            reuseNode true
+                        }
+                    }                    
+                    when {
+                        environment name: "targetBranchChanged", value: null
+                    }                     
+                    stages {
+//----------------------------------------------------------Static Code Analysis--------------------------------------------------------------------------------
+                        stage('Static Code Analysis') {
+                            steps {
+                                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                                script{
+                                    sh "flutter analyze"
+                                }
+                            }
+                            post {
+                                always {
+                                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                                }
+                            }  
+                        }
+//----------------------------------------------------------Code Style Formatting--------------------------------------------------------------------------------
+                        stage('Code Style Formatting') {
+                            steps {
+                                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                                script{
+                                    //Запуск Style Formatting. Для каждого проекта свои передаваемые значения, уточнить у лида проекта;
+                                    sh "flutter format --line-length 120 --dry-run --set-exit-if-changed lib test"
+                                }
+                            }
+                            post {
+                                always {
+                                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                                }
+                            } 
+                        }
+//----------------------------------------------------------Unit Test--------------------------------------------------------------------------------
+                        stage('Unit Test') {
+                            steps {
+                                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                                script{
+                                    sh "flutter pub get"
+                                    sh "flutter test"
+                                }
+                            }
+                            post {
+                                always {
+                                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                                }
+                            } 
+                        }
+//----------------------------------------------------------Build Android--------------------------------------------------------------------------------
+                        stage('Build Android') {
+                            steps {
+                                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                                withCredentials([
+                                    file(credentialsId: "${env.ANDROID_RELEASE_KEYSTORE}",            variable: 'KEYSTORE'),
+                                    file(credentialsId: "${env.ANDROID_RELEASE_KEYSTORE_PROPERTIES}", variable: 'KEYSTORE_PROPERTIES')
+                                ]){
+                                    script {
+                                        //Записываем свойство ключа;
+                                        properties = readFile(KEYSTORE_PROPERTIES)
+                                        vars = properties.tokenize('\n')
+                                        //Устанавливаем переменые среды;
+                                        withEnv(vars) {
+                                            withEnv(["storeFile=$KEYSTORE"]) {
+                                                sh "chmod +x ./script/android/build.sh"
+                                                sh "./script/android/build.sh -qa"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            post {
+                                always {
+                                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                                }
+                            } 
+                        }
+                    }
+                }
+//----------------------------------------------------------iOS-------------------------------------------------------------------------------------------------
+                stage("iOS") {
+                    when {
+                        //Проверяем нужно ли собирать iOS. stage: Check iOS need to build;
+                        expression { ios_stage == true } 
+                        //Останавливаем stage iOS, если запушен при merge request;
+                        environment name: "targetBranchChanged", value: null
+                    }
+                    agent {
+                        //Где собираем iOS;
+                        label "${env.IOS_LABEL}"
+                    }
+                    stages {
+//----------------------------------------------------------Checkout-------------------------------------------------------------------------------
+                        stage('Checkout iOS'){
+                            steps {
+                                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                                script {
+                                    try {
+                                        sh "git reset --merge"
+                                        sh "git reset"
+                                        sh "git checkout ."
+                                        sh "git clean -fdx"
+                                    } catch (Exception ex) {
+                                        echo "^^^^ Exception occurred: " + ex.toString()
+                                    }
+                                }
+                                // Делаем Checkout;
+                                git url: "${env.repoUrl}",                                                                                   
+                                    credentialsId: "${env.git_cred}",
+                                    branch: "${env.sourceBranch}"
+                            }
+                            post {
+                                always {
+                                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                                }
+                            } 
+                        }
+//----------------------------------------------------------Checkout Flutter Version iOS--------------------------------------------------------------------------------
+                        stage('Checkout Flutter Version') {
+                            steps {
+                                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                                script {
+                                    sh "chmod +x ./script/version.sh"
+                                    sh "./script/version.sh"
+                                }
+                            }
+                            post {
+                                always {
+                                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                                }
+                            } 
+                        }
+//----------------------------------------------------------iOS Init-------------------------------------------------------------------------------------------------
+                        stage('iOS Init') {
+                            steps {
+                                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                                script {
+                                    sh "set +x; source ~/.bashrc; source ~/.rvm/scripts/rvm; rvm use ${env.rvm_version}; make -C ios/ init"
+                                }
+                            }
+                            post {
+                                always {
+                                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                                }
+                            } 
+                        }
+//----------------------------------------------------------Build iOS----------------------------------------------------------------------------------------------------
+                        stage('Build iOS') {
+                            steps {
+                                gitNotify(stageName: "${env.STAGE_NAME}", statusName: "PENDING")
+                                script{
+                                    sh "chmod +x ./script/ios/build.sh"
+                                    sh "set +x; source ~/.bashrc; source ~/.rvm/scripts/rvm; rvm use ${env.rvm_version}; ./script/ios/build.sh -qa"
+                                }
+                            }
+                            post {
+                                always {
+                                    gitNotify(stageName: "${env.STAGE_NAME}", statusName: currentBuild.currentResult)
+                                }
+                            } 
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post{
+        always{
+            //Чистим рабочий каталог
+            cleanWs()        
+        }
+    }        
+}
+//----------------------------------------------------------Finish--------------------------------------------------------------------------------------------------------

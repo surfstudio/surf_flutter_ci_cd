@@ -1,0 +1,135 @@
+# Customise this file, documentation can be found here:
+# https://docs.fastlane.tools/actions/
+# All available actions: https://docs.fastlane.tools/actions
+# can also be listed using the `fastlane actions` command
+
+# Change the syntax highlighting to Ruby
+# All lines starting with a # are ignored when running `fastlane`
+
+# If you want to automatically update fastlane if a new version is available:
+# update_fastlane
+
+# This is the minimum version number required.
+# Update this, if you use features of a newer version
+fastlane_version "2.210.1"
+
+prod_bundle_id = <PROD_BUNDLE_ID> # TODO: Add your id here in double quotes
+dev_bundle_id = <DEV_BUNDLE_ID> # TODO: Add your id here in double quotes
+
+prod_target = "Runner"
+prod_scheme = "Runner"
+
+default_platform :ios
+
+platform :ios do
+  lane :build do |options|
+    xcodebuild(
+      workspace: "Runner.xcworkspace",
+      scheme: prod_scheme,
+      configuration: "Debug",
+      clean: options[:clean],
+      build: true,
+      destination: "generic/platform=iOS\" CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=\""
+    )
+  end
+
+   desc "Submit a new Beta Build to Firebase"
+  lane :beta do
+
+    cocoapods(use_bundle_exec:true)
+
+    sigh(
+      development: true,
+      app_identifier: dev_bundle_id,
+      api_key: get_app_store_connect_api_key,
+    )
+
+    build_app(
+      scheme: "Runner",
+      skip_build_archive: true,
+      clean: true,
+      include_bitcode: false,
+      export_method: "development",
+      export_options: {
+        compileBitcode: false,
+        provisioningProfiles: {
+            dev_bundle_id => "love_republic_dev"
+        }
+      },
+      archive_path: "../build/ios/archive/Runner.xcarchive",
+    )
+
+    upload_to_fad(app_id: <APP_ID>) # TODO: Add app id in double quotes
+
+    sh("rm ../*.mobileprovision")
+  end
+
+  # Need check
+  desc "Submit a new Release Build to Test Flight"
+  lane :release do
+    cocoapods(use_bundle_exec:true)
+
+    sigh(
+      development: false,
+      app_identifier: prod_bundle_id,
+      api_key: get_app_store_connect_api_key,
+    )
+
+    build_app(
+      scheme: "Runner",
+      skip_build_archive: true,
+      clean: true,
+      include_bitcode: false,
+      export_method: "app-store",
+      export_options: {
+        compileBitcode: false,
+        provisioningProfiles: {
+          dev_bundle_id => <DEV_BUNDLE_ID # TODO: add dev bundle id in double quotes
+        },
+      },
+      archive_path: "../build/ios/archive/Runner.xcarchive",
+    )
+
+    upload_to_testflight(
+      skip_submission: true,
+      skip_waiting_for_build_processing: true,
+      api_key: get_app_store_connect_api_key
+    )
+
+    sh("rm ../*.mobileprovision")
+  end
+
+  lane :upload_to_fad do |options|
+    app_id = options[:app_id]
+    firebase_app_distribution(
+        app: "#{app_id}",
+        groups: "Surf",
+        release_notes: "QA",
+        firebase_cli_path: "/usr/local/bin/firebase",
+        firebase_cli_token: ENV["FIREBASE_TOKEN"],
+    )
+  end
+
+  desc "Get Apple ASC API key from ENV"
+  lane :get_app_store_connect_api_key do
+    ensure_env_vars(
+      env_vars: [
+        'APP_STORE_CONNECT_API_KEY'
+      ]
+    )
+    app_store_connect_api_key(
+      key_id: <KEY_ID> # TODO: Add key id in double quotes
+      issuer_id: <ISSUER_ID> # TODO: Add issuer id in double quotes
+      key_content:  "#{ENV["APP_STORE_CONNECT_API_KEY"]}".gsub('\n', '\\n'),
+      in_house: false,
+    )
+  end
+
+end
+
+
+# More information about multiple platforms in fastlane: https://github.com/fastlane/fastlane/blob/master/fastlane/docs/Platforms.md
+# All available actions: https://docs.fastlane.tools/actions
+
+# fastlane reports which actions are used. No personal data is recorded.
+# Learn more at https://github.com/fastlane/fastlane#metrics

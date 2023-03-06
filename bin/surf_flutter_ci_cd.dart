@@ -1,8 +1,9 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:process_run/shell.dart';
-import 'package:surf_flutter_ci_cd/utils/printer.dart';
+import 'package:surf_flutter_ci_cd/src/util/printer.dart';
+import 'package:surf_flutter_ci_cd/surf_flutter_ci_cd.dart';
+import 'package:yaml/yaml.dart';
 
 void main(List<String> arguments) {
   var parser = ArgParser();
@@ -10,9 +11,9 @@ void main(List<String> arguments) {
   parser.addOption('proj', abbr: 'p', help: 'Project name');
   parser.addOption('target', abbr: 't', help: 'Target platform');
 
-  var env;
-  var proj;
-  var target;
+  final String? env;
+  final String? proj;
+  final String? target;
   final ArgResults results;
 
   try {
@@ -43,7 +44,7 @@ void main(List<String> arguments) {
   switch (results.rest.isNotEmpty ? results.rest[0] : '') {
     case 'build':
       print('Building $proj for $target in $env environment');
-      _shellCommand();
+      _build(proj, env, target);
       break;
     case 'deploy':
       print('Deploying $proj for $target to $env environment');
@@ -56,21 +57,16 @@ void main(List<String> arguments) {
   }
 }
 
-Future<void> _shellCommand() async {
-  final shell = Shell();
-  final res = await shell.run('ls');
-
-  for (final out in res) {
-    stdout
-      ..write(out.stderr)
-      ..write(out.stdout);
-  }
-
-  await shell.run('cd ..');
-  final res1 = await shell.run('ls');
-  for (final out in res1) {
-    stdout
-      ..write(out.stderr)
-      ..write(out.stdout);
-  }
+Future<void> _build(String proj, String env, String target) async {
+  final yamlContent = await File('cd.yaml').readAsString();
+  final config = loadYaml(yamlContent) as Map;
+  final ext = config[proj][env][target]['build']['extension'] as String;
+  final flavor = config[proj][env][target]['build']['flavor'] as String;
+  print(ext);
+  print(flavor);
+    await buildAndroidOutput(
+    flavor: flavor,
+    buildType: env,
+    format: PublishingFormat.fromString(ext) ?? PublishingFormat.appbundle,
+  );
 }
