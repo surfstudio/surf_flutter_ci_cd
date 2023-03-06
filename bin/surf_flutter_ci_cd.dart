@@ -58,13 +58,18 @@ void main(List<String> arguments) {
 }
 
 Future<void> _build(String proj, String env, String target) async {
+  final result = await Process.run('ls', []);
+  stdout.write(result.stdout);
+  stderr.write(result.stderr);
+
   final yamlContent = await File('cd.yaml').readAsString();
+  print('YAML CONTENT $yamlContent');
   final config = loadYaml(yamlContent) as Map;
   final ext = config[proj][env][target]['build']['extension'] as String;
   final flavor = config[proj][env][target]['build']['flavor'] as String;
   print(ext);
   print(flavor);
-    await buildAndroidOutput(
+  await buildAndroidOutput(
     flavor: flavor,
     buildType: env,
     format: PublishingFormat.fromString(ext) ?? PublishingFormat.appbundle,
