@@ -65,6 +65,7 @@ Future<void> _build(String proj, String env, String target) async {
 
   switch (target) {
     case 'android':
+      print('Android build started');
       await buildAndroidOutput(
         flavor: flavor,
         buildType: env,
@@ -72,6 +73,7 @@ Future<void> _build(String proj, String env, String target) async {
       );
       break;
     case 'ios':
+      print('Ios build started');
       await buildIosOutput(
         flavor: flavor,
         buildType: env,
