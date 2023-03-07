@@ -16,6 +16,7 @@ Future<void> build({
   required String flavor,
   required String buildType,
 }) async {
+  await _initCerts();
   await _buildIpa(flavor: flavor, buildType: buildType);
 }
 
@@ -33,7 +34,10 @@ Future<void> _buildIpa({
     '--flavor',
     flavor,
     '--release',
+    '-allowProvisioningUpdates',
   ]);
   stdout.write(result.stdout);
   stderr.write(result.stderr);
 }
+
+Future<void> _initCerts() async {}
