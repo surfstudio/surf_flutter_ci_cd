@@ -25,8 +25,7 @@ Future<void> _buildIpa({
 }) async {
   Printer.printWarning('Build type: $buildType, Format: ipa, Flavor: $flavor');
 
-  final result = await Process.run('fvm', [
-    'flutter',
+  final result = await Process.run('flutter', [
     'build',
     'ipa',
     '-t',
