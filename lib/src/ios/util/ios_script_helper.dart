@@ -1,7 +1,7 @@
 class IosScriptHelper {
   static String get preBuildScript => '''
-flutter clean
-flutter pub get''';
+fvm flutter clean
+fvm flutter pub get''';
 
   const IosScriptHelper._();
 

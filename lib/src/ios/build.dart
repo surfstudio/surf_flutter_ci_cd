@@ -16,7 +16,7 @@ Future<void> build({
   required String flavor,
   required String buildType,
 }) async {
-  await _initCerts();
+  // await _initCerts();
   await _buildIpa(flavor: flavor, buildType: buildType);
 }
 
@@ -26,7 +26,8 @@ Future<void> _buildIpa({
 }) async {
   Printer.printWarning('Build type: $buildType, Format: ipa, Flavor: $flavor');
 
-  final result = await Process.run('flutter', [
+  final result = await Process.run('fvm', [
+    'flutter',
     'build',
     'ipa',
     '-t',
@@ -39,4 +40,4 @@ Future<void> _buildIpa({
   stderr.write(result.stderr);
 }
 
-Future<void> _initCerts() async {}
+// Future<void> _initCerts() async {}

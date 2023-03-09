@@ -46,8 +46,9 @@ class ApkBuilder implements IOutputBuilder {
     );
 
     final result = await Process.run(
-      'flutter',
+      'fvm',
       [
+        'flutter',
         'build',
         'apk',
         '-t',
@@ -115,8 +116,9 @@ class AppBundleBuilder implements IOutputBuilder {
     );
 
     final result = await Process.run(
-      'flutter',
+      'fvm',
       [
+        'flutter',
         'build',
         'appbundle',
         '-t',
