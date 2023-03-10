@@ -1,5 +1,7 @@
 class AndroidScriptHelper {
-  static String get preBuildScript => 'fvm flutter pub get';
+  static String get preBuildScript => '''
+fvm flutter clean
+fvm flutter pub get''';
 
   const AndroidScriptHelper._();
 }
