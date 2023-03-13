@@ -1,6 +1,6 @@
 name: surf_flutter_ci_cd
 description: A sample command-line application.
-version: 0.0.1
+version: 0.0.2
 
 environment:
   sdk: '>=2.17.0-0 <3.0.0'
