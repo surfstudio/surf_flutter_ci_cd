@@ -26,6 +26,7 @@ class ApkBuilder implements IOutputBuilder {
     required String flavor,
     required String entryPointPath,
     required String buildType,
+    required String projectName,
   }) async {
     final jenkinsArchiveArtifactsLocation =
         'build/app/outputs/apk/$flavor/release/';
@@ -39,6 +40,7 @@ class ApkBuilder implements IOutputBuilder {
       buildType: buildType,
       jenkinsArchiveArtifactsLocation: jenkinsArchiveArtifactsLocation,
       flavor: flavor,
+      projectName: projectName,
     );
   }
 
@@ -48,7 +50,7 @@ class ApkBuilder implements IOutputBuilder {
     required String buildType,
   }) async {
     Printer.printWarning(
-      'Build type: $buildType, Format: appbundle, Flavor: $flavor',
+      'Build type: $buildType, Format: apk, Flavor: $flavor',
     );
 
     final result = await Process.run(
@@ -71,6 +73,7 @@ class ApkBuilder implements IOutputBuilder {
   Future<void> _renameApk({
     required String buildType,
     required String jenkinsArchiveArtifactsLocation,
+    required String projectName,
     required String flavor,
   }) async {
     final postfix = buildType;
@@ -85,7 +88,7 @@ class ApkBuilder implements IOutputBuilder {
 
     for (final prefix in prefixes) {
       final currentName = 'app-$prefix-$flavor-release.apk';
-      final newName = 'app-$postfix-$prefix.apk';
+      final newName = 'app-$projectName-$postfix-$prefix.apk';
       await _renameFile(
         filePath: _apkPath,
         newFilePath: jenkinsArchiveArtifactsLocation,
@@ -102,6 +105,7 @@ class AppBundleBuilder implements IOutputBuilder {
     required String flavor,
     required String entryPointPath,
     required String buildType,
+    required String projectName,
   }) async {
     final jenkinsArchiveArtifactsLocation =
         'build/app/outputs/bundle/$flavor/release/';
@@ -115,6 +119,7 @@ class AppBundleBuilder implements IOutputBuilder {
       buildType: entryPointPath,
       jenkinsArchiveArtifactsLocation: jenkinsArchiveArtifactsLocation,
       flavor: flavor,
+      projectName: projectName,
     );
   }
 
@@ -147,6 +152,7 @@ class AppBundleBuilder implements IOutputBuilder {
     required String buildType,
     required String jenkinsArchiveArtifactsLocation,
     required String flavor,
+    required String projectName,
   }) async {
     final postfix = buildType;
 
@@ -155,7 +161,7 @@ class AppBundleBuilder implements IOutputBuilder {
 
     Printer.printNormal('Making subdirectory for $postfix');
     await Directory(jenkinsArchiveArtifactsLocation).create(recursive: true);
-    final name = 'app-$flavor-release.aab';
+    final name = 'app-$projectName-$flavor-release.aab';
 
     final newName = 'app-$postfix.aab';
 

@@ -12,6 +12,7 @@ Future<void> buildAndroidOutput({
   required String flavor,
   required String buildType,
   required String entryPointPath,
+  required String projectName,
   PublishingFormat format = PublishingFormat.appbundle,
 }) async {
   exitCode = 0;
@@ -32,6 +33,7 @@ Future<void> buildAndroidOutput({
       buildType: buildType,
       entryPointPath: entryPointPath,
       format: format,
+      projectName: projectName,
     );
   } on Object catch (e) {
     Printer.printError(e.toString());

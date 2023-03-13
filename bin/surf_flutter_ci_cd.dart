@@ -43,11 +43,11 @@ void main(List<String> arguments) {
 
   switch (results.rest.isNotEmpty ? results.rest[0] : '') {
     case 'build':
-      print('Building $proj for $target in $env environment');
+      Printer.printNormal('Building $proj for $target in $env environment');
       _build(proj, env, target);
       break;
     case 'deploy':
-      print('Deploying $proj for $target to $env environment');
+      Printer.printNormal('Deploying $proj for $target in $env environment');
       // execute deploy command here
       break;
     default:
@@ -66,16 +66,17 @@ Future<void> _build(String proj, String env, String target) async {
 
   switch (target) {
     case 'android':
-      print('Android build started');
+      Printer.printWarning('Android build started');
       await buildAndroidOutput(
         flavor: flavor,
         buildType: env,
         entryPointPath: entryPointPath,
+        projectName: proj,
         format: PublishingFormat.fromString(ext) ?? PublishingFormat.appbundle,
       );
       break;
     case 'ios':
-      print('Ios build started');
+      Printer.printWarning('Ios build started');
       await buildIosOutput(
         flavor: flavor,
         buildType: env,

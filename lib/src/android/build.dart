@@ -15,12 +15,17 @@ Future<void> build({
   required String flavor,
   required String buildType,
   required String entryPointPath,
+  required String projectName,
   required PublishingFormat format,
-
 }) async {
   final outputBuilder = _resolveOutputBuilder(format);
 
-  await outputBuilder.build(flavor: flavor, entryPointPath: entryPointPath, buildType: buildType);
+  await outputBuilder.build(
+    flavor: flavor,
+    entryPointPath: entryPointPath,
+    buildType: buildType,
+    projectName: projectName,
+  );
 }
 
 IOutputBuilder _resolveOutputBuilder(PublishingFormat? publishingFormat) {
