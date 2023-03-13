@@ -15,12 +15,18 @@ import 'package:surf_flutter_ci_cd/src/util/printer.dart';
 Future<void> build({
   required String flavor,
   required String buildType,
+  required String entryPointPath,
 }) async {
-  await _buildIpa(flavor: flavor, buildType: buildType);
+  await _buildIpa(
+    flavor: flavor,
+    buildType: buildType,
+    entryPointPath: entryPointPath,
+  );
 }
 
 Future<void> _buildIpa({
   required String buildType,
+  required String entryPointPath,
   required String flavor,
 }) async {
   Printer.printWarning('Build type: $buildType, Format: ipa, Flavor: $flavor');
@@ -30,7 +36,7 @@ Future<void> _buildIpa({
     'build',
     'ipa',
     '-t',
-    'lib/main_$buildType.dart',
+    entryPointPath,
     '--flavor',
     flavor,
     '--release',

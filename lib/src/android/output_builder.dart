@@ -24,12 +24,17 @@ class ApkBuilder implements IOutputBuilder {
   @override
   Future<void> build({
     required String flavor,
+    required String entryPointPath,
     required String buildType,
   }) async {
     final jenkinsArchiveArtifactsLocation =
         'build/app/outputs/apk/$flavor/release/';
 
-    await _buildApk(flavor: flavor, buildType: buildType);
+    await _buildApk(
+      flavor: flavor,
+      entryPointPath: entryPointPath,
+      buildType: buildType,
+    );
     await _renameApk(
       buildType: buildType,
       jenkinsArchiveArtifactsLocation: jenkinsArchiveArtifactsLocation,
@@ -39,10 +44,11 @@ class ApkBuilder implements IOutputBuilder {
 
   Future<void> _buildApk({
     required String flavor,
+    required String entryPointPath,
     required String buildType,
   }) async {
     Printer.printWarning(
-      'Build type: $buildType, Format: apk, Flavor: $flavor',
+      'Build type: $buildType, Format: appbundle, Flavor: $flavor',
     );
 
     final result = await Process.run(
@@ -52,7 +58,7 @@ class ApkBuilder implements IOutputBuilder {
         'build',
         'apk',
         '-t',
-        'lib/main_$buildType.dart',
+        entryPointPath,
         '--flavor',
         flavor,
         '--split-per-abi',
@@ -94,14 +100,19 @@ class AppBundleBuilder implements IOutputBuilder {
   @override
   Future<void> build({
     required String flavor,
+    required String entryPointPath,
     required String buildType,
   }) async {
     final jenkinsArchiveArtifactsLocation =
         'build/app/outputs/bundle/$flavor/release/';
 
-    await _buildAppBundle(buildType: buildType, flavor: flavor);
-    await _ranameAppBundle(
+    await _buildAppBundle(
       buildType: buildType,
+      flavor: flavor,
+      entryPointPath: entryPointPath,
+    );
+    await _renameAppBundle(
+      buildType: entryPointPath,
       jenkinsArchiveArtifactsLocation: jenkinsArchiveArtifactsLocation,
       flavor: flavor,
     );
@@ -109,6 +120,7 @@ class AppBundleBuilder implements IOutputBuilder {
 
   Future<void> _buildAppBundle({
     required String buildType,
+    required String entryPointPath,
     required String flavor,
   }) async {
     Printer.printWarning(
@@ -122,7 +134,7 @@ class AppBundleBuilder implements IOutputBuilder {
         'build',
         'appbundle',
         '-t',
-        'lib/main_$buildType.dart',
+        entryPointPath,
         '--flavor',
         flavor,
       ],
@@ -131,7 +143,7 @@ class AppBundleBuilder implements IOutputBuilder {
     stderr.write(result.stderr);
   }
 
-  Future<void> _ranameAppBundle({
+  Future<void> _renameAppBundle({
     required String buildType,
     required String jenkinsArchiveArtifactsLocation,
     required String flavor,

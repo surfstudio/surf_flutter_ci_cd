@@ -14,11 +14,13 @@ import 'package:surf_flutter_ci_cd/src/output_builder/i_output_builder.dart';
 Future<void> build({
   required String flavor,
   required String buildType,
+  required String entryPointPath,
   required PublishingFormat format,
+
 }) async {
   final outputBuilder = _resolveOutputBuilder(format);
 
-  await outputBuilder.build(flavor: flavor, buildType: buildType);
+  await outputBuilder.build(flavor: flavor, entryPointPath: entryPointPath, buildType: buildType);
 }
 
 IOutputBuilder _resolveOutputBuilder(PublishingFormat? publishingFormat) {

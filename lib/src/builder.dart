@@ -11,6 +11,7 @@ import 'package:surf_flutter_ci_cd/src/util/printer.dart';
 Future<void> buildAndroidOutput({
   required String flavor,
   required String buildType,
+  required String entryPointPath,
   PublishingFormat format = PublishingFormat.appbundle,
 }) async {
   exitCode = 0;
@@ -26,7 +27,12 @@ Future<void> buildAndroidOutput({
         ..write(out.stdout);
     }
 
-    await android.build(flavor: flavor, buildType: buildType, format: format);
+    await android.build(
+      flavor: flavor,
+      buildType: buildType,
+      entryPointPath: entryPointPath,
+      format: format,
+    );
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
@@ -36,6 +42,7 @@ Future<void> buildAndroidOutput({
 Future<void> buildIosOutput({
   required String flavor,
   required String buildType,
+  required String entryPointPath,
 }) async {
   exitCode = 0;
 
@@ -50,7 +57,11 @@ Future<void> buildIosOutput({
         ..write(out.stdout);
     }
 
-    await ios.build(flavor: flavor, buildType: buildType);
+    await ios.build(
+      flavor: flavor,
+      buildType: buildType,
+      entryPointPath: entryPointPath,
+    );
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
