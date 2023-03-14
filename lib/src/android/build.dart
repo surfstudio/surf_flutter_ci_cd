@@ -15,6 +15,7 @@ Future<void> build({
   required String flavor,
   required String buildType,
   required String entryPointPath,
+  required String flags,
   required String projectName,
   required PublishingFormat format,
 }) async {
@@ -23,6 +24,7 @@ Future<void> build({
   await outputBuilder.build(
     flavor: flavor,
     entryPointPath: entryPointPath,
+    flags: flags,
     buildType: buildType,
     projectName: projectName,
   );

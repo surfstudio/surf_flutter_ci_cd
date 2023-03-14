@@ -13,6 +13,7 @@ Future<void> buildAndroidOutput({
   required String buildType,
   required String entryPointPath,
   required String projectName,
+  required String flags,
   PublishingFormat format = PublishingFormat.appbundle,
 }) async {
   exitCode = 0;
@@ -32,6 +33,7 @@ Future<void> buildAndroidOutput({
       flavor: flavor,
       buildType: buildType,
       entryPointPath: entryPointPath,
+      flags: flags,
       format: format,
       projectName: projectName,
     );

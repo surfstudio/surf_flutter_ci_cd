@@ -4,6 +4,7 @@ abstract class IOutputBuilder {
     required String flavor,
     required String entryPointPath,
     required String buildType,
+    required String flags,
     required String projectName,
   });
 }

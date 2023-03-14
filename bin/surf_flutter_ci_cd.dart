@@ -63,6 +63,7 @@ Future<void> _build(String proj, String env, String target) async {
   final ext = config[proj][env][target]['build']['extension'] as String;
   final flavor = config[proj][env][target]['build']['flavor'] as String;
   final entryPointPath = config[proj][env]['file_path'] as String;
+  final flags = config[proj][env][target]['build']['flags'] as String;
 
   switch (target) {
     case 'android':
@@ -73,6 +74,7 @@ Future<void> _build(String proj, String env, String target) async {
         entryPointPath: entryPointPath,
         projectName: proj,
         format: PublishingFormat.fromString(ext) ?? PublishingFormat.appbundle,
+        flags: flags,
       );
       break;
     case 'ios':

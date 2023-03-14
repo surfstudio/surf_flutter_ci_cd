@@ -26,6 +26,7 @@ class ApkBuilder implements IOutputBuilder {
     required String flavor,
     required String entryPointPath,
     required String buildType,
+    required String flags,
     required String projectName,
   }) async {
     final jenkinsArchiveArtifactsLocation =
@@ -35,19 +36,21 @@ class ApkBuilder implements IOutputBuilder {
       flavor: flavor,
       entryPointPath: entryPointPath,
       buildType: buildType,
+      flags: flags,
     );
-    await _renameApk(
-      buildType: buildType,
-      jenkinsArchiveArtifactsLocation: jenkinsArchiveArtifactsLocation,
-      flavor: flavor,
-      projectName: projectName,
-    );
+    // await _renameApk(
+    //   buildType: buildType,
+    //   jenkinsArchiveArtifactsLocation: jenkinsArchiveArtifactsLocation,
+    //   flavor: flavor,
+    //   projectName: projectName,
+    // );
   }
 
   Future<void> _buildApk({
     required String flavor,
     required String entryPointPath,
     required String buildType,
+    required String flags,
   }) async {
     Printer.printWarning(
       'Build type: $buildType, Format: apk, Flavor: $flavor',
@@ -63,7 +66,7 @@ class ApkBuilder implements IOutputBuilder {
         entryPointPath,
         '--flavor',
         flavor,
-        '--split-per-abi',
+        flags,
       ],
     );
     stdout.write(result.stdout);
@@ -106,6 +109,7 @@ class AppBundleBuilder implements IOutputBuilder {
     required String entryPointPath,
     required String buildType,
     required String projectName,
+    required String flags,
   }) async {
     final jenkinsArchiveArtifactsLocation =
         'build/app/outputs/bundle/$flavor/release/';
@@ -114,6 +118,7 @@ class AppBundleBuilder implements IOutputBuilder {
       buildType: buildType,
       flavor: flavor,
       entryPointPath: entryPointPath,
+      flags: flags,
     );
     await _renameAppBundle(
       buildType: entryPointPath,
@@ -127,6 +132,7 @@ class AppBundleBuilder implements IOutputBuilder {
     required String buildType,
     required String entryPointPath,
     required String flavor,
+    required String flags,
   }) async {
     Printer.printWarning(
       'Build type: $buildType, Format: appbundle, Flavor: $flavor',
@@ -142,6 +148,7 @@ class AppBundleBuilder implements IOutputBuilder {
         entryPointPath,
         '--flavor',
         flavor,
+        flags
       ],
     );
     stdout.write(result.stdout);
