@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:process_run/shell.dart';
-import 'package:surf_flutter_ci_cd/src/android/build.dart' as android;
-import 'package:surf_flutter_ci_cd/src/android/util/android_script_helper.dart';
 import 'package:surf_flutter_ci_cd/src/enums/enums.dart';
 import 'package:surf_flutter_ci_cd/src/ios/build.dart' as ios;
 import 'package:surf_flutter_ci_cd/src/ios/util/ios_script_helper.dart';
@@ -17,26 +15,22 @@ Future<void> buildAndroidOutput({
   PublishingFormat format = PublishingFormat.appbundle,
 }) async {
   exitCode = 0;
-
   try {
-    final shell = Shell();
-
-    final res = await shell.run(AndroidScriptHelper.preBuildScript);
-
-    for (final out in res) {
-      stdout
-        ..write(out.stderr)
-        ..write(out.stdout);
-    }
-
-    await android.build(
-      flavor: flavor,
-      buildType: buildType,
-      entryPointPath: entryPointPath,
-      flags: flags,
-      format: format,
-      projectName: projectName,
+    final result = await Process.run(
+      'fvm',
+      [
+        'flutter',
+        'build',
+        format.format,
+        '-t',
+        entryPointPath,
+        '--flavor',
+        flavor,
+        flags,
+      ],
     );
+    stdout.write(result.stdout);
+    stderr.write(result.stderr);
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
