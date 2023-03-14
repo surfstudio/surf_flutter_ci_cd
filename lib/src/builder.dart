@@ -17,9 +17,8 @@ Future<void> buildAndroidOutput({
   exitCode = 0;
   try {
     final result = await Process.run(
-      'fvm',
+      'flutter',
       [
-        'flutter',
         'build',
         format.format,
         '-t',
