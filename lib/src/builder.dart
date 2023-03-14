@@ -1,9 +1,6 @@
 import 'dart:io';
 
-import 'package:process_run/shell.dart';
 import 'package:surf_flutter_ci_cd/src/enums/enums.dart';
-import 'package:surf_flutter_ci_cd/src/ios/build.dart' as ios;
-import 'package:surf_flutter_ci_cd/src/ios/util/ios_script_helper.dart';
 import 'package:surf_flutter_ci_cd/src/util/printer.dart';
 
 Future<void> buildAndroidOutput({
@@ -15,6 +12,9 @@ Future<void> buildAndroidOutput({
   PublishingFormat format = PublishingFormat.appbundle,
 }) async {
   exitCode = 0;
+  Printer.printWarning(
+    'Build type: $buildType, Format: $format, Flavor: $flavor, Target: $entryPointPath',
+  );
   try {
     final result = await Process.run(
       'flutter',
@@ -44,21 +44,21 @@ Future<void> buildIosOutput({
   exitCode = 0;
 
   try {
-    final shell = Shell();
+    Printer.printWarning(
+        'Build type: $buildType, Format: ipa, Flavor: $flavor');
 
-    final res = await shell.run(IosScriptHelper.preBuildScript);
-
-    for (final out in res) {
-      stdout
-        ..write(out.stderr)
-        ..write(out.stdout);
-    }
-
-    await ios.build(
-      flavor: flavor,
-      buildType: buildType,
-      entryPointPath: entryPointPath,
-    );
+    final result = await Process.run('fvm', [
+      'flutter',
+      'build',
+      'ipa',
+      '-t',
+      entryPointPath,
+      '--flavor',
+      flavor,
+      '--release',
+    ]);
+    stdout.write(result.stdout);
+    stderr.write(result.stderr);
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
