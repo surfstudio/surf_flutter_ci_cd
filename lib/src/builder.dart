@@ -17,8 +17,9 @@ Future<void> buildAndroidOutput({
   );
   try {
     final result = await Process.run(
-      'flutter',
+      'fvm',
       [
+        'flutter',
         'build',
         format.format,
         '-t',
@@ -40,6 +41,7 @@ Future<void> buildIosOutput({
   required String flavor,
   required String buildType,
   required String entryPointPath,
+  required String flags,
 }) async {
   exitCode = 0;
 
@@ -55,7 +57,7 @@ Future<void> buildIosOutput({
       entryPointPath,
       '--flavor',
       flavor,
-      '--release',
+      flags,
     ]);
     stdout.write(result.stdout);
     stderr.write(result.stderr);

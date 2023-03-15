@@ -83,6 +83,7 @@ Future<void> _build(String proj, String env, String target) async {
         flavor: flavor,
         buildType: env,
         entryPointPath: entryPointPath,
+        flags: flags,
       );
       break;
     default:
