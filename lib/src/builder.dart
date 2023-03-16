@@ -18,14 +18,16 @@ Future<void> buildAndroidOutput({
     'Build type: $buildType, Format: $format, Flavor: $flavor, Target: $entryPointPath, flags: $flags',
   );
   try {
-    // final shell = Shell();
+    Printer.printNormal('Activate fvm');
 
-    // var results = await shell.run('dart pub global activate fvm');
+    final shell = Shell();
 
-    // for (var element in results) {
-    //   stdout.write(element.stdout);
-    //   stderr.write(element.stderr);
-    // }
+    var results = await shell.run('dart pub global activate fvm');
+
+    for (var element in results) {
+      stdout.write(element.stdout);
+      stderr.write(element.stderr);
+    }
 
     // results = await shell.run('fvm flutter clean');
 
