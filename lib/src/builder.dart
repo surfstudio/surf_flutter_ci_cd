@@ -27,8 +27,8 @@ Future<void> buildAndroidOutput({
     stdoutController.stream.transform(utf8.decoder).listen(stdout.write);
     stderrController.stream.transform(utf8.decoder).listen(stderr.write);
 
-    Printer.printNormal('Activate fvm');
-    await shell.run('dart pub global activate fvm');
+    // Printer.printNormal('Activate fvm');
+    // await shell.run('dart pub global activate fvm');
 
     Printer.printNormal('Flutter clean');
     await shell.run('fvm flutter clean');
