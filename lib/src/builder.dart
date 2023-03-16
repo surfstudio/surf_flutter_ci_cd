@@ -19,87 +19,26 @@ Future<void> buildAndroidOutput({
     'Build type: $buildType, Format: $format, Flavor: $flavor, Target: $entryPointPath, flags: $flags',
   );
   try {
-    final controller = StreamController<List<int>>();
-    final controllerError = StreamController<List<int>>();
+    final stdoutController = StreamController<List<int>>();
+    final stderrController = StreamController<List<int>>();
 
-    final shell = Shell(stdout: controller, stderr: controllerError);
+    final shell = Shell(stdout: stdoutController, stderr: stderrController);
 
-    controller.stream.transform(utf8.decoder).listen(print);
-    controllerError.stream.transform(utf8.decoder).listen(print);
+    stdoutController.stream.transform(utf8.decoder).listen(stdout.write);
+    stderrController.stream.transform(utf8.decoder).listen(stderr.write);
 
     Printer.printNormal('Activate fvm');
-
     await shell.run('dart pub global activate fvm');
 
-    // final fvmProcess = await Process.start('dart', [
-    //   'pub',
-    //   'global',
-    //   'activate',
-    //   'fvm',
-    // ]);
-
-    // fvmProcess.stdout.transform(utf8.decoder).forEach(stdout.write);
-    // fvmProcess.stderr.transform(utf8.decoder).forEach(stderr.write);
-
     Printer.printNormal('Flutter clean');
-
     await shell.run('fvm flutter clean');
 
-    // final cleanProcess = await Process.start('fvm', [
-    //   'flutter',
-    //   'clean',
-    // ]);
-
-    // cleanProcess.stdout.transform(utf8.decoder).forEach(stdout.write);
-    // cleanProcess.stderr.transform(utf8.decoder).forEach(stderr.write);
-
     Printer.printNormal('Flutter pub get');
-
     await shell.run('fvm flutter pub get');
 
-    // final getProcess = await Process.start('fvm', [
-    //   'flutter',
-    //   'pub',
-    //   'get',
-    // ]);
-
-    // getProcess.stdout.transform(utf8.decoder).forEach(stdout.write);
-    // getProcess.stderr.transform(utf8.decoder).forEach(stderr.write);
-
-    // results = await shell.run('fvm flutter clean');
-
-    // for (var element in results) {
-    //   stdout.write(element.stdout);
-    //   stderr.write(element.stderr);
-    // }
-
-    // results = await shell.run('fvm flutter pub get');
-
-    // for (var element in results) {
-    //   stdout.write(element.stdout);
-    //   stderr.write(element.stderr);
-    // }
     Printer.printNormal('Build start Android start with flags:');
-
     await shell.run(
         'fvm flutter build ${format.format} -t $entryPointPath --flavor $flavor $flags');
-
-    // final buildProcess = await Process.start(
-    //   'fvm',
-    //   [
-    //     'flutter',
-    //     'build',
-    //     (),
-    //     '-t',
-    //     entryPointPath,
-    //     '--flavor',
-    //     flavor,
-    //     flags,
-    //   ],
-    // );
-
-    // buildProcess.stdout.transform(utf8.decoder).forEach(stdout.write);
-    // buildProcess.stderr.transform(utf8.decoder).forEach(stderr.write);
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
@@ -114,22 +53,30 @@ Future<void> buildIosOutput({
 }) async {
   exitCode = 0;
 
-  try {
-    Printer.printWarning(
-        'Build type: $buildType, Format: ipa, Flavor: $flavor, Target: $entryPointPath, flags: $flags');
+  Printer.printWarning(
+      'Build type: $buildType, Format: ipa, Flavor: $flavor, Target: $entryPointPath, flags: $flags');
 
-    final result = await Process.run('fvm', [
-      'flutter',
-      'build',
-      'ipa',
-      '-t',
-      entryPointPath,
-      '--flavor',
-      flavor,
-      flags,
-    ]);
-    stdout.write(result.stdout);
-    stderr.write(result.stderr);
+  try {
+    final stdoutController = StreamController<List<int>>();
+    final stderrController = StreamController<List<int>>();
+
+    final shell = Shell(stdout: stdoutController, stderr: stderrController);
+
+    stdoutController.stream.transform(utf8.decoder).listen(stdout.write);
+    stderrController.stream.transform(utf8.decoder).listen(stderr.write);
+
+    Printer.printNormal('Activate fvm');
+    await shell.run('dart pub global activate fvm');
+
+    Printer.printNormal('Flutter clean');
+    await shell.run('fvm flutter clean');
+
+    Printer.printNormal('Flutter pub get');
+    await shell.run('fvm flutter pub get');
+
+    Printer.printNormal('Build start Android start with flags:');
+    await shell.run(
+        'fvm flutter build ipa -t $entryPointPath --flavor $flavor $flags');
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
