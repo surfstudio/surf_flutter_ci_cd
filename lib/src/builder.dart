@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:process_run/shell.dart';
 import 'package:surf_flutter_ci_cd/src/enums/enums.dart';
 import 'package:surf_flutter_ci_cd/src/util/printer.dart';
 
@@ -16,6 +18,29 @@ Future<void> buildAndroidOutput({
     'Build type: $buildType, Format: $format, Flavor: $flavor, Target: $entryPointPath, flags: $flags',
   );
   try {
+    final shell = Shell();
+
+    var results = await shell.run('dart pub global activate fvm');
+
+    for (var element in results) {
+      stdout.write(element.stdout);
+      stderr.write(element.stderr);
+    }
+
+    // results = await shell.run('fvm flutter clean');
+
+    // for (var element in results) {
+    //   stdout.write(element.stdout);
+    //   stderr.write(element.stderr);
+    // }
+
+    // results = await shell.run('fvm flutter pub get');
+
+    // for (var element in results) {
+    //   stdout.write(element.stdout);
+    //   stderr.write(element.stderr);
+    // }
+
     final result = await Process.run(
       'fvm',
       [
