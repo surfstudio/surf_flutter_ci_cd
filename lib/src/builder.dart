@@ -13,7 +13,7 @@ Future<void> buildAndroidOutput({
 }) async {
   exitCode = 0;
   Printer.printWarning(
-    'Build type: $buildType, Format: $format, Flavor: $flavor, Target: $entryPointPath',
+    'Build type: $buildType, Format: $format, Flavor: $flavor, Target: $entryPointPath, flags: $flags',
   );
   try {
     final result = await Process.run(
@@ -47,7 +47,7 @@ Future<void> buildIosOutput({
 
   try {
     Printer.printWarning(
-        'Build type: $buildType, Format: ipa, Flavor: $flavor');
+        'Build type: $buildType, Format: ipa, Flavor: $flavor, Target: $entryPointPath, flags: $flags');
 
     final result = await Process.run('fvm', [
       'flutter',
