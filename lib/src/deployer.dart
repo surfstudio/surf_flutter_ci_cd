@@ -17,9 +17,10 @@ Future<void> deployAndroidToFirebase({
   stderrController.stream.transform(utf8.decoder).listen(stderr.write);
 
   final script = <String>[
-    'set +x',
-    'source ~/.bashrc',
-    'source ~/.rvm/scripts/rvm',
+    // 'set +x',
+    // 'source ~/.bashrc',
+    // 'source ~/.rvm/scripts/rvm',
+    //
     'export APP_ID="$appId"',
     'export GROUPS="$groups"',
     r'echo ${APP_ID}',
