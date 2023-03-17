@@ -25,11 +25,15 @@ Future<void> deployAndroidToFirebase({
   stdoutController.stream.transform(utf8.decoder).listen(stdout.write);
   stderrController.stream.transform(utf8.decoder).listen(stderr.write);
 
-  await shell.run(r'echo ${APP_ID}; echo ${GROUPS}');
+  await shell.run('echo \$APP_ID');
+  await shell.run('echo \$GROUPS');
+  await shell.run('''
+echo \$APP_ID
+echo \$GROUPS''');
 
   final script = <String>[
-    r'echo ${APP_ID}',
-    r'echo ${GROUPS}',
+    'echo \$APP_ID',
+    'echo \$GROUPS',
     'ls',
     'make -C android_deploy/ init',
     'make -C android_deploy/ beta',
