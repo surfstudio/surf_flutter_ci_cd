@@ -1,6 +1,6 @@
 // ignore_for_file: implicit_dynamic_variable, avoid_print
 
-import 'package:surf_flutter_ci_cd/src/android/output_builder.dart';
+import 'package:surf_flutter_ci_cd/src/android_deploy/output_builder.dart';
 import 'package:surf_flutter_ci_cd/src/enums/enums.dart';
 import 'package:surf_flutter_ci_cd/src/output_builder/i_output_builder.dart';
 

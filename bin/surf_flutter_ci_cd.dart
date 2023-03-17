@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:surf_flutter_ci_cd/src/deployer.dart';
 import 'package:surf_flutter_ci_cd/src/util/printer.dart';
 import 'package:surf_flutter_ci_cd/surf_flutter_ci_cd.dart';
 import 'package:yaml/yaml.dart';
@@ -10,10 +11,12 @@ void main(List<String> arguments) {
   parser.addOption('env', abbr: 'e', help: 'Environment name');
   parser.addOption('proj', abbr: 'p', help: 'Project name');
   parser.addOption('target', abbr: 't', help: 'Target platform');
+  parser.addOption('deploy-to', abbr: 'd', help: 'Deploy to platform');
 
   final String? env;
   final String? proj;
   final String? target;
+  final String? deployTo;
   final ArgResults results;
 
   try {
@@ -21,6 +24,7 @@ void main(List<String> arguments) {
     env = results['env'];
     proj = results['proj'];
     target = results['target'];
+    deployTo = results['deploy-to'];
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
@@ -48,11 +52,16 @@ void main(List<String> arguments) {
       break;
     case 'deploy':
       Printer.printNormal('Deploying $proj for $target in $env environment');
+      if (deployTo == null) {
+        Printer.printError('Set deployTo params');
+        exit(1);
+      }
+      _deploy(proj, env, target, deployTo);
       // execute deploy command here
       break;
     default:
-      print(
-          'Invalid command. Usage: dart script.dart [build|deploy] --env=<environment> --proj=<project> --target=<target platform>');
+      Printer.printError(
+          'Invalid command. Use [build|deploy] --env=<environment> --proj=<project> --target=<target platform> --deploy-to=<deploy platform>');
       exit(1);
   }
 }
@@ -87,5 +96,44 @@ Future<void> _build(String proj, String env, String target) async {
       );
       break;
     default:
+      Printer.printError(
+          'Invalid command. Use [build|deploy] --env=<environment> --proj=<project> --target=<target platform> --deploy-to=<deploy platform>');
+      exit(1);
+  }
+}
+
+Future<void> _deploy(
+  String proj,
+  String env,
+  String target,
+  String deployTo,
+) async {
+  final yamlContent = await File('cd.yaml').readAsString();
+  final config = loadYaml(yamlContent) as Map;
+
+  switch (target) {
+    case 'android':
+      switch (deployTo) {
+        case 'firebase':
+          final appId = config[proj][env][target]['deploy'][deployTo]
+              ['firebase_app_id'] as String;
+          final groups =
+              config[proj][env][target]['deploy'][deployTo]['groups'] as String;
+
+          await deployAndroidToFirebase(appId: appId, groups: groups,);
+          break;
+        case 'play_market':
+          break;
+        default:
+          Printer.printError(
+              'Wrong deployTo param for android. Current value: $deployTo');
+          exit(1);
+      }
+      break;
+    case 'ios':
+      break;
+    default:
+      Printer.printError('Wrong target param. Current value: $target');
+      exit(1);
   }
 }
