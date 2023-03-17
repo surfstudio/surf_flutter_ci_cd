@@ -29,5 +29,5 @@ Future<void> deployAndroidToFirebase({
     'make -C lib/src/android_deploy/ beta',
   ];
 
-  await shell.run(script.join('&&'));
+  await shell.run(script.join(' && '));
 }
