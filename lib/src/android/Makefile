@@ -29,15 +29,17 @@ init:
 	# Install bundler if not installed
 	if ! gem spec bundler > /dev/null 2>&1; then\
   		echo "bundler gem is not installed!";\
-  		-gem install bundler -v 1.17.3;\
+  		gem install bundler -v 1.17.3;\
 	fi
 
-	-bundle install --path .bundle
+	bundle install --path .bundle
 
 ## Used to upload debug build in fabric. Usually, it is not called manually, it is necessary for the CI to work.
 beta:
-	bundle exec fastlane beta
+	bundle exec fastlane beta app_id:${APP_ID} groups:${GROUPS}
 
 ## Used to upload debug build in app_store. Usually, it is not called manually, it is necessary for the CI to work.
 release:
 	bundle exec fastlane release
+test:
+	echo app_id:${APP_ID} groups:${GROUPS}
