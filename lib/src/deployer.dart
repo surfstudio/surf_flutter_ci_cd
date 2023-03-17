@@ -25,8 +25,9 @@ Future<void> deployAndroidToFirebase({
     'export GROUPS="$groups"',
     r'echo ${APP_ID}',
     r'echo ${GROUPS}',
-    'make -C lib/src/android_deploy/ init',
-    'make -C lib/src/android_deploy/ beta',
+    'ls',
+    'make -C android_deploy/ init',
+    'make -C android_deploy/ beta',
   ];
 
   await shell.run(script.join(' && '));
