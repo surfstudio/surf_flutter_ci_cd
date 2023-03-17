@@ -8,21 +8,26 @@ Future<void> deployAndroidToFirebase({
   required String appId,
   required String groups,
 }) async {
+  final environment = <String, String>{
+    'APP_ID': appId,
+    'GROUPS': groups,
+  };
+
   final stdoutController = StreamController<List<int>>();
   final stderrController = StreamController<List<int>>();
 
-  final shell = Shell(stdout: stdoutController, stderr: stderrController);
+  final shell = Shell(
+    stdout: stdoutController,
+    stderr: stderrController,
+    environment: environment,
+  );
 
   stdoutController.stream.transform(utf8.decoder).listen(stdout.write);
   stderrController.stream.transform(utf8.decoder).listen(stderr.write);
 
+  await shell.run(r'echo ${APP_ID}; echo ${GROUPS}');
+
   final script = <String>[
-    // 'set +x',
-    // 'source ~/.bashrc',
-    // 'source ~/.rvm/scripts/rvm',
-    //
-    'export APP_ID="$appId"',
-    'export GROUPS="$groups"',
     r'echo ${APP_ID}',
     r'echo ${GROUPS}',
     'ls',
