@@ -48,8 +48,7 @@ Future<void> deployAndroidToFirebase({
 
   await shell.run('rvm use 3.0.0');
   await shell.run('make -C $path init');
-  Printer.printWarning('Upload with: APP_ID:$appId GROUPS:$groups');
-  await shell.run('make -C $path beta APP_ID:$appId GROUPS:$groups');
+  await shell.run('make -C $path beta');
 
   // await DeployHelper.deploy(
   //   DeployHelperSettings(
