@@ -15,11 +15,13 @@ default_platform(:android)
 platform :android do
 
   desc "Submit a new debug build to Firebase App Distribution"
-  lane :beta do |options|
-    app_id = options[:app_id]
-    groups = options[:groups]
+  lane :beta do
+    app_id = ENV["APP_ID"]
+    groups = ENV["GROUPS"]
+    token = ENV["FIREBASE_TOKEN"]
     puts "#{app_id}"
     puts "#{groups}"
+    puts "#{token}"
     puts "Firebase App Distribution | QA Build"
   end
 end

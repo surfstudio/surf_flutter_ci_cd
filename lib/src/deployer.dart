@@ -27,7 +27,17 @@ Future<void> deployAndroidToFirebase({
   final stdoutController = StreamController<List<int>>();
   final stderrController = StreamController<List<int>>();
 
-  final shell = Shell(stdout: stdoutController, stderr: stderrController);
+  final env = ShellEnvironment(environment: {
+    'APP_ID': appId,
+    'GROUPS': groups,
+    'FIREBASE_TOKEN': '123TOKEN123',
+  });
+
+  final shell = Shell(
+    stdout: stdoutController,
+    stderr: stderrController,
+    environment: env,
+  );
 
   stdoutController.stream.transform(utf8.decoder).listen(stdout.write);
   stderrController.stream.transform(utf8.decoder).listen(stderr.write);
