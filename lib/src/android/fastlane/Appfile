@@ -1,4 +1,4 @@
-json_key_file(<KEY_FILE>)# TODO: Add path to the json secret file in double quotes - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
-package_name(<PACKAGE_NAME>) # TODO: Add package name e.g. com.krausefx.app todo without double quotes
+# json_key_file(<KEY_FILE>)# TODO: Add path to the json secret file in double quotes - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
+# package_name(<PACKAGE_NAME>) # TODO: Add package name e.g. com.krausefx.app todo without double quotes
 
  

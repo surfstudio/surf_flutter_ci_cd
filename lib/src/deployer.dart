@@ -35,9 +35,8 @@ Future<void> deployAndroidToFirebase({
     path: 'package:surf_flutter_ci_cd/lib/src/android/',
   );
 
-  print(path);
-
-  await shell.run('make -C $path test APP_ID=$appId GROUPS=$groups');
+  await shell.run(
+      'make -C $path init && make -C $path beta APP_ID:$appId GROUPS:$groups');
 
   // await DeployHelper.deploy(
   //   DeployHelperSettings(
