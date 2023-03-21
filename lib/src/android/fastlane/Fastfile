@@ -7,7 +7,7 @@
 
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
-fastlane_version "2.212.1"
+# fastlane_version "2.212.1"
 # firebase_app_id = <FIREBASE_APP_ID> # TODO: Add firebase app id in double quotes
 
 default_platform(:android)
@@ -15,44 +15,33 @@ default_platform(:android)
 platform :android do
 
   desc "Submit a new debug build to Firebase App Distribution"
-  lane :beta do
+  lane :dev do
     app_id = ENV["APP_ID"]
     groups = ENV["GROUPS"]
     token = ENV["FIREBASE_TOKEN"]
-    puts "#{app_id}"
-    puts "#{groups}"
-    puts "#{token}"
-    puts "Firebase App Distribution | QA Build"
+    puts "APP_ID: #{app_id}"
+    puts "GROUPS: #{groups}"
+    puts "FIREBASE_TOKEN: #{token}"
+    puts "Firebase App Distribution | Dev Build"
+    upload_to_fad(
+      app_id: app_id,
+      apk_path: "../build/app/outputs/flutter-apk/app-dev-release.apk",
+      groups: groups,
+      release_notes: "TODO: Get from Github tag release note",
+   )
   end
+    lane :upload_to_fad do |options|
+    app_id = options[:app_id]
+    apk_path = options[:apk_path]
+    groups = options[:groups]
+    release_notes = options[:release_notes]
+    firebase_app_distribution(
+        app: "#{app_id}",
+        apk_path: "#{apk_path}",
+        groups: "#{groups}",
+        release_notes: "#{release_notes}",
+        firebase_cli_path: "/usr/local/bin/firebase",
+        firebase_cli_token: ENV["FIREBASE_TOKEN"],
+      )
+   end
 end
-  # upload_to_fad(
-  #     app_id: app_id,
-  #     apk_path: "../build/app/outputs/flutter-apk/app-dev-release.apk",
-  #     groups: groups,
-  #     release_notes: "QA",
-  #  )
-
-  # puts "Firebase App Distribution | QA Build | 64-bit"
-  # upload_to_fad(
-  #     app_id: firebase_app_id,
-  #     apk_path: "../build/app/outputs/apk/dev/release/app-qa-arm64-v8a.apk",
-  #     groups: "Surf",
-  #     release_notes: "QA x64",
-  # )
-  # end
-
-  # lane :upload_to_fad do |options|
-  #   app_id = options[:app_id]
-  #   apk_path = options[:apk_path]
-  #   groups = options[:groups]
-  #   release_notes = options[:release_notes]
-  #   firebase_app_distribution(
-  #       app: "#{app_id}",
-  #       apk_path: "#{apk_path}",
-  #       groups: "#{groups}",
-  #       release_notes: "#{release_notes}",
-  #       firebase_cli_path: "/usr/local/bin/firebase",
-  #       # firebase_cli_token: ENV["FIREBASE_TOKEN"],
-  #     )
-  #  end
-# end

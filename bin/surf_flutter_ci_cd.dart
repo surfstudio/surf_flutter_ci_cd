@@ -119,8 +119,14 @@ Future<void> _deploy(
               ['firebase_app_id'] as String;
           final groups =
               config[proj][env][target]['deploy'][deployTo]['groups'] as String;
+          final token = config[proj][env][target]['deploy'][deployTo]
+              ['firebase_token'] as String;
 
-          await deployAndroidToFirebase(appId: appId, groups: groups,);
+          await deployAndroidToFirebase(
+            appId: appId,
+            groups: groups,
+            token: token.isEmpty ? null : token,
+          );
           break;
         case 'play_market':
           break;

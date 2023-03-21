@@ -3,26 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:process_run/shell.dart';
-import 'package:surf_flutter_ci_cd/src/util/deploy_helper.dart';
 import 'package:surf_flutter_ci_cd/src/util/package_path_converter.dart';
 import 'package:surf_flutter_ci_cd/src/util/printer.dart';
-//
-
-// void main(List<String> args) {
-//   deployAndroidToFirebase(appId: '1234567', groups: 'SURF');
-// }
-
-const _plarformFolderName = 'android';
-
-const _googleCredsEnvName = 'GOOGLE_APPLICATION_CREDENTIALS';
-const _apkPathEnvName = 'APK_PATH';
-const _testersEnvName = 'TESTERS';
-const _firebaseAppIdEnvName = 'FIREBASE_APP_ID';
-const _firebaseReleaseNotesEnvName = 'FIREBASE_RELEASE_NOTES';
 
 Future<void> deployAndroidToFirebase({
   required String appId,
   required String groups,
+  String? token,
 }) async {
   final stdoutController = StreamController<List<int>>();
   final stderrController = StreamController<List<int>>();
@@ -30,7 +17,8 @@ Future<void> deployAndroidToFirebase({
   final env = ShellEnvironment(environment: {
     'APP_ID': appId,
     'GROUPS': groups,
-    'FIREBASE_TOKEN': '123TOKEN123',
+    // По умолчанию токен добавляется в окружение на CICD.
+    if (token != null) 'FIREBASE_TOKEN': token,
   });
 
   final shell = Shell(
@@ -42,15 +30,32 @@ Future<void> deployAndroidToFirebase({
   stdoutController.stream.transform(utf8.decoder).listen(stdout.write);
   stderrController.stream.transform(utf8.decoder).listen(stderr.write);
 
+  Printer.printSuccess('Execute shell with environment: ${env.toJson()}');
+
   final path = await PackagePathResolver.resolve(
     path: 'package:surf_flutter_ci_cd/lib/src/android/',
   );
 
   await shell.run('rvm use 3.0.0');
   await shell.run('make -C $path init');
-  await shell.run('make -C $path beta');
+  await shell.run('make -C $path dev');
+}
 
-  // await DeployHelper.deploy(
+//
+
+// void main(List<String> args) {
+//   deployAndroidToFirebase(appId: '1234567', groups: 'SURF');
+// }
+
+// const _plarformFolderName = 'android';
+
+// const _googleCredsEnvName = 'GOOGLE_APPLICATION_CREDENTIALS';
+// const _apkPathEnvName = 'APK_PATH';
+// const _testersEnvName = 'TESTERS';
+// const _firebaseAppIdEnvName = 'FIREBASE_APP_ID';
+// const _firebaseReleaseNotesEnvName = 'FIREBASE_RELEASE_NOTES';
+
+    // await DeployHelper.deploy(
   //   DeployHelperSettings(
   //     // android
   //     platformDirectoryName: _plarformFolderName,
@@ -71,8 +76,6 @@ Future<void> deployAndroidToFirebase({
   //     makefileArgs: ['beta'],
   //   ),
   // );
-}
-
 
   // await shell.run('ls');
 
