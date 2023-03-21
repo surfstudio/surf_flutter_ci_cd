@@ -39,6 +39,25 @@ Future<void> deployAndroidToFirebase({
   Printer.printWarning('Current dir: ${Directory.current.path}');
   Printer.printWarning('Package dir: $path');
 
+  final source =
+      Directory('${Directory.current.path}/build/app/outputs/flutter-apk/');
+  final rootPath =
+      await PackagePathResolver.resolve(path: 'package:surf_flutter_ci_cd/');
+  final destination = Directory('$rootPath/build/app/outputs/flutter-apk/');
+
+  await copyDirectory(source, destination);
+
+  final apk = File('$destination/app-dev-release.apk');
+  final exist = await apk.exists();
+  (exist)
+      ? Printer.printNormal('APK FILE IS EXIST: $exist')
+      : Printer.printError('APK FILE NOT IS EXIST: $exist');
+
+  await for (final file in destination.list(recursive: true)) {
+    Printer.printSuccess('File path ${file.path}');
+    Printer.printSuccess('File URI ${file.uri}');
+  }
+
   // final pkgDir = Directory(path);
   // final artifactDir = Directory(path);
 
