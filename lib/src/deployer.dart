@@ -36,10 +36,41 @@ Future<void> deployAndroidToFirebase({
     path: 'package:surf_flutter_ci_cd/lib/src/android/',
   );
 
-  await shell.run('rvm use 3.0.0');
-  await shell.run('make -C $path init');
-  await shell.run('make -C $path dev');
+  Printer.printWarning('Current dir: ${Directory.current.path}');
+  Printer.printWarning('Package dir: $path');
+
+  // final pkgDir = Directory(path);
+  // final artifactDir = Directory(path);
+
+  // await shell.run('rvm use 3.0.0');
+  // await shell.run('make -C $path init');
+  // await shell.run('make -C $path dev');
 }
+
+Future<void> copyDirectory(Directory source, Directory destination) async {
+  // Create the destination directory if it doesn't exist
+  if (!(await destination.exists())) {
+    await destination.create(recursive: true);
+  }
+
+  // Iterate through the source directory and its subdirectories
+  source.listSync(recursive: true).forEach((entity) {
+    if (entity is File) {
+      // If the entity is a file, copy it to the destination directory
+      final sourceFile = File(entity.path);
+      final destinationFile =
+          File('${destination.path}/${sourceFile.path.split('/').last}');
+      sourceFile.copySync(destinationFile.path);
+    } else if (entity is Directory) {
+      // If the entity is a directory, create a corresponding subdirectory
+      // in the destination directory and recurse into it
+      final subDirectory =
+          Directory('${destination.path}/${entity.path.split('/').last}');
+      copyDirectory(entity, subDirectory);
+    }
+  });
+}
+
 
 //
 
