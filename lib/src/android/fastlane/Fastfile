@@ -27,7 +27,7 @@ platform :android do
     puts "Current working directory is: #{current_path}"
     upload_to_fad(
       app_id: app_id,
-      apk_path: "../build/app/outputs/flutter-apk/app-dev-release.apk",
+      apk_path: "../../build/app/outputs/flutter-apk/app-dev-release.apk",
       groups: groups,
       release_notes: "TODO: Get from Github tag release note",
    )

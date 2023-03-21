@@ -30,43 +30,42 @@ Future<void> deployAndroidToFirebase({
   stdoutController.stream.transform(utf8.decoder).listen(stdout.write);
   stderrController.stream.transform(utf8.decoder).listen(stderr.write);
 
-  Printer.printSuccess('Execute shell with environment: ${env.toJson()}');
+  final envValues = StringBuffer();
 
-  final path = await PackagePathResolver.resolve(
-    path: 'package:surf_flutter_ci_cd/lib/src/android/',
-  );
+  env.forEach((key, value) {
+    envValues.write('key:$key, value:$value');
+    envValues.writeln();
+  });
 
-  Printer.printWarning('Current dir: ${Directory.current.path}');
-  Printer.printWarning('Package dir: $path');
+  Printer.printSuccess('Execute shell with environment: $envValues');
 
   final source =
       Directory('${Directory.current.path}/build/app/outputs/flutter-apk/');
   final rootPath =
       await PackagePathResolver.resolve(path: 'package:surf_flutter_ci_cd/');
-  final destination = Directory('$rootPath/build/app/outputs/flutter-apk/');
+  final destination = Directory('${rootPath}build/app/outputs/flutter-apk/');
 
   await copyDirectory(source, destination);
 
-  final apk = File('$destination/app-dev-release.apk');
-  final exist = await apk.exists();
-  (exist)
-      ? Printer.printNormal('APK FILE IS EXIST: $exist')
-      : Printer.printError('APK FILE NOT IS EXIST: $exist');
-
   await for (final file in destination.list(recursive: true)) {
     Printer.printSuccess('File path ${file.path}');
-    Printer.printSuccess('File URI ${file.uri}');
   }
 
-  // final pkgDir = Directory(path);
-  // final artifactDir = Directory(path);
+  final path = await PackagePathResolver.resolve(
+    path: 'package:surf_flutter_ci_cd/lib/src/android/',
+  );
 
-  // await shell.run('rvm use 3.0.0');
-  // await shell.run('make -C $path init');
-  // await shell.run('make -C $path dev');
+  await shell.run('rvm use 3.0.0');
+  await shell.run('make -C $path init');
+  await shell.run('make -C $path dev');
 }
 
 Future<void> copyDirectory(Directory source, Directory destination) async {
+  Printer.printNormal('''Copy all files from
+  ${source.path}
+  to
+  ${destination.path}''');
+
   // Create the destination directory if it doesn't exist
   if (!(await destination.exists())) {
     await destination.create(recursive: true);
