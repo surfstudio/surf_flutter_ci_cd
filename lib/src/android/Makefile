@@ -34,7 +34,6 @@ init:
 	
 	bundle config set --local path '.bundle'
 	bundle install
-	bundle exec fastlane add_plugin firebase_app_distribution
 	
 ## Used to upload debug build in fabric. Usually, it is not called manually, it is necessary for the CI to work.
 dev:
