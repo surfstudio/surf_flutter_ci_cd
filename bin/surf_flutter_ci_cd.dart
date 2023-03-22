@@ -114,12 +114,13 @@ Future<void> _deploy(
   switch (target) {
     case 'android':
       switch (deployTo) {
-        case 'firebase':
-          final appId = config[proj][env][target]['deploy'][deployTo]
+        // Firebase
+        case 'fb':
+          final appId = config[proj][env][target]['deploy']['firebase']
               ['firebase_app_id'] as String;
-          final groups =
-              config[proj][env][target]['deploy'][deployTo]['groups'] as String;
-          final token = config[proj][env][target]['deploy'][deployTo]
+          final groups = config[proj][env][target]['deploy']['firebase']
+              ['groups'] as String;
+          final token = config[proj][env][target]['deploy']['firebase']
               ['firebase_token'] as String;
 
           await deployAndroidToFirebase(
@@ -137,6 +138,28 @@ Future<void> _deploy(
       }
       break;
     case 'ios':
+      switch (deployTo) {
+        // TestFlight
+        case 'tf':
+          final keyId = config[proj][env][target]['deploy']['test_flight']
+              ['key_id'] as String;
+          final issuerId = config[proj][env][target]['deploy']['test_flight']
+              ['issuer_id'] as String;
+          await deployIosToTestFlight(keyId: keyId, issuerId: issuerId);
+          break;
+        case 'fb':
+          final appId = config[proj][env][target]['deploy']['firebase']
+              ['firebase_app_id'] as String;
+          final groups = config[proj][env][target]['deploy']['firebase']
+              ['groups'] as String;
+          final token = config[proj][env][target]['deploy']['firebase']
+              ['firebase_token'] as String;
+          break;
+        default:
+          Printer.printError(
+              'Wrong deployTo param for ios. Current value: $deployTo');
+          exit(1);
+      }
       break;
     default:
       Printer.printError('Wrong target param. Current value: $target');

@@ -29,15 +29,17 @@ init:
 	# Install bundler if not installed
 	if ! gem spec bundler > /dev/null 2>&1; then\
   		echo "bundler gem is not installed!";\
-  		-gem install bundler -v 1.17.3;\
+  		gem install bundler;\
 	fi
+	
+	bundle config set --local path '.bundle'
+	bundle install
 
-	-bundle install --path .bundle
-#	-bundle exec pod repo update
-#	-bundle exec pod update
+# #	-bundle exec pod repo update
+# #	-bundle exec pod update
 
-	-bundle exec fastlane add_plugin firebase_app_distribution
-	sh ./scripts/init_certs.sh
+# 	-bundle exec fastlane add_plugin firebase_app_distribution
+# 	sh ./scripts/init_certs.sh
 
 ## Used to upload debug build in fabric. Usually, it is not called manually, it is necessary for the CI to work.
 beta:
@@ -46,7 +48,3 @@ beta:
 ## Used to upload debug build in app_store. Usually, it is not called manually, it is necessary for the CI to work.
 release:
 	bundle exec fastlane release
-
-## Nothing to do, stub method, it is necessary for the CI to work.
-sonar:
-	@echo does noting

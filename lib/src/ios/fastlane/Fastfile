@@ -11,120 +11,41 @@
 
 # This is the minimum version number required.
 # Update this, if you use features of a newer version
-fastlane_version "2.210.1"
-
-prod_bundle_id = <PROD_BUNDLE_ID> # TODO: Add your id here in double quotes
-dev_bundle_id = <DEV_BUNDLE_ID> # TODO: Add your id here in double quotes
-
-prod_target = "Runner"
-prod_scheme = "Runner"
+# fastlane_version "2.210.1"
 
 default_platform :ios
 
 platform :ios do
-  lane :build do |options|
-    xcodebuild(
-      workspace: "Runner.xcworkspace",
-      scheme: prod_scheme,
-      configuration: "Debug",
-      clean: options[:clean],
-      build: true,
-      destination: "generic/platform=iOS\" CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=\""
-    )
-  end
-
-   desc "Submit a new Beta Build to Firebase"
   lane :beta do
+    # "Q58Q4Y9A5W"
+    key_id = ENV["KEY_ID"]
+    puts "FASTLANE KEY_ID: #{key_id}"
+    # "69a6de95-7865-47e3-e053-5b8c7c11a4d1"
+    issuer_id = ENV["ISSUER_ID"]
+    puts "FASTLANE ISSUER_ID: #{issuer_id}"
+    # ../../build/ios/ipa/Апетка Ригла.ipa
+    ipa_path = ENV["IPA_PATH"]
+    puts "FASTLANE IPA_PATH: #{ipa_path}"
+    # ../../ios/certs/AuthKey_Q58Q4Y9A5W.p8
+    p8_path = ENV["P8_PATH"]
+    puts "FASTLANE P8_PATH: #{p8_path}"
 
-    cocoapods(use_bundle_exec:true)
-
-    sigh(
-      development: true,
-      app_identifier: dev_bundle_id,
-      api_key: get_app_store_connect_api_key,
-    )
-
-    build_app(
-      scheme: "Runner",
-      skip_build_archive: true,
-      clean: true,
-      include_bitcode: false,
-      export_method: "development",
-      export_options: {
-        compileBitcode: false,
-        provisioningProfiles: {
-            dev_bundle_id => "love_republic_dev"
-        }
-      },
-      archive_path: "../build/ios/archive/Runner.xcarchive",
-    )
-
-    upload_to_fad(app_id: <APP_ID>) # TODO: Add app id in double quotes
-
-    sh("rm ../*.mobileprovision")
+    # api_key = app_store_connect_api_key(
+    #   key_id: key_id,
+    #   issuer_id: issuer_id,
+    #   key_filepath: p8_path,
+    #   duration: 1200, # optional (maximum 1200)
+    #   in_house: false # optional but may be required if using match/sigh
+    # )
+  
+    # upload_to_testflight(
+    #   api_key: api_key,
+    #   skip_submission: true,
+    #   ipa: ipa_path,
+    #   skip_waiting_for_build_processing: true,
+    #   changelog: 'Try to get this info from Github tag',
+    # )
   end
-
-  # Need check
-  desc "Submit a new Release Build to Test Flight"
-  lane :release do
-    cocoapods(use_bundle_exec:true)
-
-    sigh(
-      development: false,
-      app_identifier: prod_bundle_id,
-      api_key: get_app_store_connect_api_key,
-    )
-
-    build_app(
-      scheme: "Runner",
-      skip_build_archive: true,
-      clean: true,
-      include_bitcode: false,
-      export_method: "app-store",
-      export_options: {
-        compileBitcode: false,
-        provisioningProfiles: {
-          dev_bundle_id => <DEV_BUNDLE_ID # TODO: add dev bundle id in double quotes
-        },
-      },
-      archive_path: "../build/ios/archive/Runner.xcarchive",
-    )
-
-    upload_to_testflight(
-      skip_submission: true,
-      skip_waiting_for_build_processing: true,
-      api_key: get_app_store_connect_api_key
-    )
-
-    sh("rm ../*.mobileprovision")
-  end
-
-  lane :upload_to_fad do |options|
-    app_id = options[:app_id]
-    firebase_app_distribution(
-        app: "#{app_id}",
-        groups: "Surf",
-        release_notes: "QA",
-        firebase_cli_path: "/usr/local/bin/firebase",
-        firebase_cli_token: ENV["FIREBASE_TOKEN"],
-    )
-  end
-
-  desc "Get Apple ASC API key from ENV"
-  lane :get_app_store_connect_api_key do
-    ensure_env_vars(
-      env_vars: [
-        'APP_STORE_CONNECT_API_KEY'
-      ]
-    )
-    app_store_connect_api_key(
-      key_id: <KEY_ID> # TODO: Add key id in double quotes
-      issuer_id: <ISSUER_ID> # TODO: Add issuer id in double quotes
-      key_content:  "#{ENV["APP_STORE_CONNECT_API_KEY"]}".gsub('\n', '\\n'),
-      in_house: false,
-    )
-  end
-
 end
 
 
