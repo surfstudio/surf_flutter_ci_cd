@@ -154,6 +154,7 @@ Future<void> _deploy(
               ['groups'] as String;
           final token = config[proj][env][target]['deploy']['firebase']
               ['firebase_token'] as String;
+            // Функция запуска загрузки в Firebase.
           break;
         default:
           Printer.printError(
