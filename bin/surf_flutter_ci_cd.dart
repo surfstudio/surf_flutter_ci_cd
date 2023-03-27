@@ -112,13 +112,13 @@ Future<void> _deploy(
   final config = loadYaml(yamlContent) as Map;
 
   final secretsYaml = File('secrets.yaml');
-  final Map<String, String> secretsMap = {};
+  final Map<dynamic, dynamic> secretsMap = {};
   final String? token;
   final String? testflightKeyId;
   final String? testflightIssuerId;
   if (secretsYaml.existsSync()) {
     secretsMap.addAll(
-        loadYaml(await secretsYaml.readAsString()) as Map<String, String>);
+        loadYaml(await secretsYaml.readAsString()) as Map<dynamic, dynamic>);
     token = secretsMap['firebase_token'] as String;
     testflightKeyId = secretsMap['testflight_key_id'] as String;
     testflightIssuerId = secretsMap['testflight_issuer_id'] as String;
