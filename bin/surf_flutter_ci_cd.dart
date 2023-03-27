@@ -126,7 +126,7 @@ Future<void> _deploy(
     firebase_token: $token
     testflight_key_id: $testflightKeyId
     testflight_issuer_id: $testflightIssuerId
-    ''');
+''');
   } else {
     token = null;
     testflightKeyId = null;
@@ -163,8 +163,8 @@ Future<void> _deploy(
       switch (deployTo) {
         // TestFlight
         case 'tf':
-          // await deployIosToTestFlight(
-          //     keyId: testflightKeyId, issuerId: testflightIssuerId);
+          await deployIosToTestFlight(
+              keyId: testflightKeyId, issuerId: testflightIssuerId);
           break;
         case 'fb':
           final appId = config[proj][env][target]['deploy']['firebase']
