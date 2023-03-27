@@ -43,12 +43,12 @@ Future<void> deployAndroidToFirebase({
   //TODO(): Возможно версию ruby тоже следует вынести.
   await shell.run('rvm use 3.0.0');
   await shell.run('make -C $makefilePath init');
-  await shell.run('make -C $makefilePath dev');
+  await shell.run('make -C $makefilePath beta');
 }
 
 Future<void> deployIosToTestFlight({
-  required String keyId,
-  required String issuerId,
+  String? keyId,
+  String? issuerId,
 }) async {
   // Путь до папки lib/ пакета внутри основного проекта.
   final rootPath = await PackagePathResolver.packagePath();
@@ -80,8 +80,8 @@ Future<void> deployIosToTestFlight({
   // Создание переменных окружения.
   final environment = ShellEnvironment(
     environment: {
-      'KEY_ID': keyId,
-      'ISSUER_ID': issuerId,
+      if (keyId != null) 'KEY_ID': keyId,
+      if (issuerId != null) 'ISSUER_ID': issuerId,
       'IPA_PATH': ipaPath,
       'P8_PATH': p8Path,
     },

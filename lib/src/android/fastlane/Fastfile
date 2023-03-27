@@ -15,16 +15,14 @@ default_platform(:android)
 platform :android do
 
   desc "Submit a new debug build to Firebase App Distribution"
-  lane :dev do
+  lane :beta do
     app_id = ENV["APP_ID"]
     groups = ENV["GROUPS"]
     token = ENV["FIREBASE_TOKEN"]
     puts "APP_ID: #{app_id}"
     puts "GROUPS: #{groups}"
     puts "FIREBASE_TOKEN: #{token}"
-    puts "Firebase App Distribution | Dev Build"
-    current_path = Dir.pwd
-    puts "Current working directory is: #{current_path}"
+    puts "Firebase App Distribution"
     upload_to_fad(
       app_id: app_id,
       apk_path: "../../build/app/outputs/flutter-apk/app-dev-release.apk",

@@ -111,6 +111,30 @@ Future<void> _deploy(
   final yamlContent = await File('cd.yaml').readAsString();
   final config = loadYaml(yamlContent) as Map;
 
+  final secretsYaml = File('secrets.yaml');
+  final Map<String, String> secretsMap = {};
+  final String? token;
+  final String? testflightKeyId;
+  final String? testflightIssuerId;
+  if (secretsYaml.existsSync()) {
+    secretsMap.addAll(
+        loadYaml(await secretsYaml.readAsString()) as Map<String, String>);
+    token = secretsMap['firebase_token'] as String;
+    testflightKeyId = secretsMap['testflight_key_id'] as String;
+    testflightIssuerId = secretsMap['testflight_issuer_id'] as String;
+    Printer.printWarning('''Local deploy with secrets:
+    firebase_token: $token
+    testflight_key_id: $testflightKeyId
+    testflight_issuer_id: $testflightIssuerId
+    ''');
+  } else {
+    token = null;
+    testflightKeyId = null;
+    testflightIssuerId = null;
+    // TODO: получить переменные окружения и вывести в консоль.
+    Printer.printWarning('Remote deploy');
+  }
+
   switch (target) {
     case 'android':
       switch (deployTo) {
@@ -120,13 +144,11 @@ Future<void> _deploy(
               ['firebase_app_id'] as String;
           final groups = config[proj][env][target]['deploy']['firebase']
               ['groups'] as String;
-          final token = config[proj][env][target]['deploy']['firebase']
-              ['firebase_token'] as String;
 
           await deployAndroidToFirebase(
             appId: appId,
             groups: groups,
-            token: token.isEmpty ? null : token,
+            token: token,
           );
           break;
         case 'play_market':
@@ -141,11 +163,8 @@ Future<void> _deploy(
       switch (deployTo) {
         // TestFlight
         case 'tf':
-          final keyId = config[proj][env][target]['deploy']['test_flight']
-              ['key_id'] as String;
-          final issuerId = config[proj][env][target]['deploy']['test_flight']
-              ['issuer_id'] as String;
-          await deployIosToTestFlight(keyId: keyId, issuerId: issuerId);
+          // await deployIosToTestFlight(
+          //     keyId: testflightKeyId, issuerId: testflightIssuerId);
           break;
         case 'fb':
           final appId = config[proj][env][target]['deploy']['firebase']
@@ -154,7 +173,7 @@ Future<void> _deploy(
               ['groups'] as String;
           final token = config[proj][env][target]['deploy']['firebase']
               ['firebase_token'] as String;
-            // Функция запуска загрузки в Firebase.
+          // Функция запуска загрузки в Firebase.
           break;
         default:
           Printer.printError(
