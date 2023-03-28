@@ -57,13 +57,31 @@ void main(List<String> arguments) {
         exit(1);
       }
       _deploy(proj, env, target, deployTo);
-      // execute deploy command here
+      break;
+    case 'full':
+      _buildAndDeploy(proj, env, target, deployTo);
       break;
     default:
       Printer.printError(
           'Invalid command. Use [build|deploy] --env=<environment> --proj=<project> --target=<target platform> --deploy-to=<deploy platform>');
       exit(1);
   }
+}
+
+Future<void> _buildAndDeploy(
+  String proj,
+  String env,
+  String target,
+  String? deployTo,
+) async {
+  if (deployTo == null) {
+    Printer.printError('Set deployTo params');
+    exit(1);
+  }
+  Printer.printNormal('Building $proj for $target in $env environment');
+  await _build(proj, env, target);
+  Printer.printNormal('Deploying $proj for $target in $env environment');
+  await _deploy(proj, env, target, deployTo);
 }
 
 Future<void> _build(String proj, String env, String target) async {
@@ -144,10 +162,12 @@ Future<void> _deploy(
               ['firebase_app_id'] as String;
           final groups = config[proj][env][target]['deploy']['firebase']
               ['groups'] as String;
+          final flavor = config[proj][env][target]['build']['flavor'] as String;
 
           await deployAndroidToFirebase(
             appId: appId,
             groups: groups,
+            flavor: flavor,
             token: token,
           );
           break;

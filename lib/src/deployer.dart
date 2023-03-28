@@ -10,6 +10,7 @@ import 'package:path/path.dart' as path;
 Future<void> deployAndroidToFirebase({
   required String appId,
   required String groups,
+  required String flavor,
   String? token,
 }) async {
   // Путь хранения собранного APK файла.
@@ -20,10 +21,18 @@ Future<void> deployAndroidToFirebase({
   // Путь в котором будет хранится скопированные данные из [source]
   final destination = Directory('${rootPath}build/app/outputs/flutter-apk/');
 
-  await _copyDirectory(source, destination);
+  final outputApkFiles = await _copyFilesWithExtension(
+    source: source,
+    destination: destination,
+    extension: '.apk',
+    pattern: flavor,
+  );
+
+  final apkPath =
+      '../../build/app/outputs/flutter-apk/${path.basename(outputApkFiles.first.path)}';
 
   await for (final file in destination.list(recursive: true)) {
-    Printer.printSuccess('File path ${file.path}');
+    Printer.printSuccess('APK file path ${file.path}');
   }
 
   final makefilePath = await PackagePathResolver.resolve(
@@ -34,6 +43,7 @@ Future<void> deployAndroidToFirebase({
   final environment = ShellEnvironment(environment: {
     'APP_ID': appId,
     'GROUPS': groups,
+    'APK_PATH': apkPath,
     // По умолчанию токен добавляется в окружение на CICD.
     if (token != null) 'FIREBASE_TOKEN': token,
   });
@@ -60,11 +70,11 @@ Future<void> deployIosToTestFlight({
   final ipaDestination = Directory('${rootPath}build/ios/ipa/');
 
   // Копирование ipa файла.
-  final outputIpaFile = await _copyFilesWithExtension(
+  final outputIpaFiles = await _copyFilesWithExtension(
       source: ipaSource, destination: ipaDestination, extension: '.ipa');
 
   final ipaPath =
-      '../../build/ios/ipa/${path.basename(outputIpaFile.first.path)}';
+      '../../build/ios/ipa/${path.basename(outputIpaFiles.first.path)}';
 
   // Путь хранения ключа p8.
   final keySource = Directory('${Directory.current.path}/ios/certs/');
@@ -128,8 +138,10 @@ Future<List<File>> _copyFilesWithExtension({
   required Directory source,
   required Directory destination,
   required String extension,
+  String pattern = '',
 }) async {
-  Printer.printNormal('''Copy files with extension = $extension from
+  Printer.printNormal(
+      '''Copy files with extension = $extension and name pattern $pattern from
   ${source.path}
   to
   ${destination.path}''');
@@ -142,8 +154,11 @@ Future<List<File>> _copyFilesWithExtension({
 
   await for (final entity in source.list()) {
     final ext = path.extension(entity.path);
-
     if (ext != extension) continue;
+
+    final name = path.basename(entity.path);
+    if (!(name.contains(pattern))) continue;
+
     final sourceFile = File(entity.path);
     final destinationFile =
         File('${destination.path}/${sourceFile.path.split('/').last}');
@@ -166,34 +181,4 @@ Future<List<File>> _copyFilesWithExtension({
   }
 
   return outputFiles;
-}
-
-/// Удалить после проверки работы копирования по расширению!
-Future<void> _copyDirectory(Directory source, Directory destination) async {
-  Printer.printNormal('''Copy all files from
-  ${source.path}
-  to
-  ${destination.path}''');
-
-  // Create the destination directory if it doesn't exist
-  if (!(await destination.exists())) {
-    await destination.create(recursive: true);
-  }
-
-  // Iterate through the source directory and its subdirectories
-  source.listSync(recursive: true).forEach((entity) {
-    if (entity is File) {
-      // If the entity is a file, copy it to the destination directory
-      final sourceFile = File(entity.path);
-      final destinationFile =
-          File('${destination.path}/${sourceFile.path.split('/').last}');
-      sourceFile.copySync(destinationFile.path);
-    } else if (entity is Directory) {
-      // If the entity is a directory, create a corresponding subdirectory
-      // in the destination directory and recurse into it
-      final subDirectory =
-          Directory('${destination.path}/${entity.path.split('/').last}');
-      _copyDirectory(entity, subDirectory);
-    }
-  });
 }

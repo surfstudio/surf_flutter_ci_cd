@@ -18,15 +18,18 @@ platform :android do
   lane :beta do
     app_id = ENV["APP_ID"]
     groups = ENV["GROUPS"]
-    token = ENV["FIREBASE_TOKEN"]
+    firebase_cli_token = ENV["FIREBASE_TOKEN"]
+    apk_path = ENV["APK_PATH"]
     puts "APP_ID: #{app_id}"
     puts "GROUPS: #{groups}"
-    puts "FIREBASE_TOKEN: #{token}"
+    puts "FIREBASE_TOKEN: #{firebase_cli_token}"
+    puts "APK_PATH: #{apk_path}"
     puts "Firebase App Distribution"
     upload_to_fad(
       app_id: app_id,
-      apk_path: "../../build/app/outputs/flutter-apk/app-dev-release.apk",
+      apk_path: apk_path,
       groups: groups,
+      firebase_cli_token: firebase_cli_token,
       release_notes: "TODO: Get from Github tag release note",
    )
   end
@@ -35,12 +38,13 @@ platform :android do
     apk_path = options[:apk_path]
     groups = options[:groups]
     release_notes = options[:release_notes]
+    firebase_cli_token = options[:firebase_cli_token]
     firebase_app_distribution(
         app: "#{app_id}",
         apk_path: "#{apk_path}",
         groups: "#{groups}",
         release_notes: "#{release_notes}",
-        firebase_cli_token: ENV["FIREBASE_TOKEN"],
+        firebase_cli_token: "#{firebase_cli_token}",
       )
    end
 end
