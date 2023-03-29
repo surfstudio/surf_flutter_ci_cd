@@ -149,7 +149,6 @@ Future<void> _deploy(
     token = null;
     testflightKeyId = null;
     testflightIssuerId = null;
-    // TODO: получить переменные окружения и вывести в консоль.
     Printer.printWarning('Remote deploy');
   }
 
@@ -191,9 +190,8 @@ Future<void> _deploy(
               ['firebase_app_id'] as String;
           final groups = config[proj][env][target]['deploy']['firebase']
               ['groups'] as String;
-          final token = config[proj][env][target]['deploy']['firebase']
-              ['firebase_token'] as String;
-          // Функция запуска загрузки в Firebase.
+          deployIosToFirebase(appId: appId, groups: groups, token: token);
+
           break;
         default:
           Printer.printError(

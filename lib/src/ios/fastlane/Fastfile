@@ -16,7 +16,7 @@
 default_platform :ios
 
 platform :ios do
-  lane :beta do
+  lane :testflight do
     # "Q58Q4Y9A5W"
     key_id = ENV["KEY_ID"]
     puts "FASTLANE KEY_ID: #{key_id}"
@@ -46,11 +46,37 @@ platform :ios do
       changelog: 'Try to get this info from Github tag',
     )
   end
+
+  lane :firebase do
+    app_id = ENV["APP_ID"]
+    groups = ENV["GROUPS"]
+    firebase_cli_token = ENV["FIREBASE_TOKEN"]
+    ipa_path = ENV["IPA_PATH"]
+    puts "FASTLANE APP_ID: #{app_id}"
+    puts "FASTLANE GROUPS: #{groups}"
+    puts "FASTLANE FIREBASE_TOKEN: #{firebase_cli_token}"
+    puts "FASTLANE IPA_PATH: #{ipa_path}"
+    puts "Firebase App Distribution"
+    upload_to_fad(
+      app_id: app_id,
+      ipa_path: ipa_path,
+      groups: groups,
+      firebase_cli_token: firebase_cli_token,
+      release_notes: "TODO: Get from Github tag release note",
+   )
+  end
+    lane :upload_to_fad do |options|
+    app_id = options[:app_id]
+    ipa_path = options[:ipa_path]
+    groups = options[:groups]
+    release_notes = options[:release_notes]
+    firebase_cli_token = options[:firebase_cli_token]
+    firebase_app_distribution(
+        app: "#{app_id}",
+        ipa_path: "#{ipa_path}",
+        groups: "#{groups}",
+        release_notes: "#{release_notes}",
+        firebase_cli_token: "#{firebase_cli_token}",
+      )
+   end
 end
-
-
-# More information about multiple platforms in fastlane: https://github.com/fastlane/fastlane/blob/master/fastlane/docs/Platforms.md
-# All available actions: https://docs.fastlane.tools/actions
-
-# fastlane reports which actions are used. No personal data is recorded.
-# Learn more at https://github.com/fastlane/fastlane#metrics

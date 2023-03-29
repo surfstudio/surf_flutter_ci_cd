@@ -50,7 +50,6 @@ Future<void> deployAndroidToFirebase({
 
   final shell = _createShellWithEnvironment(environment);
 
-  //TODO(): Возможно версию ruby тоже следует вынести.
   await shell.run('rvm use 3.0.0');
   await shell.run('make -C $makefilePath init');
   await shell.run('make -C $makefilePath beta');
@@ -64,17 +63,7 @@ Future<void> deployIosToTestFlight({
   final rootPath = await PackagePathResolver.packagePath();
 
   // Путь хранения собранного IPA файла.
-  final ipaSource = Directory('${Directory.current.path}/build/ios/ipa/');
-
-  // Путь в котором будет хранится скопированные данные из [source]
-  final ipaDestination = Directory('${rootPath}build/ios/ipa/');
-
-  // Копирование ipa файла.
-  final outputIpaFiles = await _copyFilesWithExtension(
-      source: ipaSource, destination: ipaDestination, extension: '.ipa');
-
-  final ipaPath =
-      '../../build/ios/ipa/${path.basename(outputIpaFiles.first.path)}';
+  final ipaPath = await _getIpaPath(rootPath);
 
   // Путь хранения ключа p8.
   final keySource = Directory('${Directory.current.path}/ios/certs/');
@@ -104,7 +93,55 @@ Future<void> deployIosToTestFlight({
 
   await shell.run('rvm use 3.0.0');
   await shell.run('make -C $makefilePath init');
-  await shell.run('make -C $makefilePath beta');
+  await shell.run('make -C $makefilePath testflight');
+}
+
+Future<void> deployIosToFirebase({
+  required String appId,
+  required String groups,
+  String? token,
+}) async {
+  // Путь до папки lib/ пакета внутри основного проекта.
+  final rootPath = await PackagePathResolver.packagePath();
+
+  // Путь хранения собранного IPA файла.
+  final ipaPath = await _getIpaPath(rootPath);
+
+  // Создание переменных окружения.
+  final environment = ShellEnvironment(environment: {
+    'APP_ID': appId,
+    'GROUPS': groups,
+    'IPA_PATH': ipaPath,
+    // По умолчанию токен добавляется в окружение на CICD.
+    if (token != null) 'FIREBASE_TOKEN': token,
+  });
+
+  final shell = _createShellWithEnvironment(environment);
+
+  final makefilePath = await PackagePathResolver.resolve(
+    path: 'package:surf_flutter_ci_cd/lib/src/ios/',
+  );
+
+  await shell.run('rvm use 3.0.0');
+  await shell.run('make -C $makefilePath init');
+  await shell.run('make -C $makefilePath firebase');
+}
+
+/// Получение пути хранения IPA файла.
+Future<String> _getIpaPath(String rootPath) async {
+  // Путь хранения собранного IPA файла.
+  final ipaSource = Directory('${Directory.current.path}/build/ios/ipa/');
+  
+  // Путь в котором будет хранится скопированные данные из [source]
+  final ipaDestination = Directory('${rootPath}build/ios/ipa/');
+  
+  // Копирование ipa файла.
+  final outputIpaFiles = await _copyFilesWithExtension(
+      source: ipaSource, destination: ipaDestination, extension: '.ipa');
+  
+  final ipaPath =
+      '../../build/ios/ipa/${path.basename(outputIpaFiles.first.path)}';
+  return ipaPath;
 }
 
 /// Создание Shell.
@@ -138,7 +175,7 @@ Future<List<File>> _copyFilesWithExtension({
   required Directory source,
   required Directory destination,
   required String extension,
-  String pattern = '',
+  Pattern pattern = '',
 }) async {
   Printer.printNormal(
       '''Copy files with extension = $extension and name pattern $pattern from
