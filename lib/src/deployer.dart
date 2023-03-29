@@ -131,14 +131,14 @@ Future<void> deployIosToFirebase({
 Future<String> _getIpaPath(String rootPath) async {
   // Путь хранения собранного IPA файла.
   final ipaSource = Directory('${Directory.current.path}/build/ios/ipa/');
-  
+
   // Путь в котором будет хранится скопированные данные из [source]
   final ipaDestination = Directory('${rootPath}build/ios/ipa/');
-  
+
   // Копирование ipa файла.
   final outputIpaFiles = await _copyFilesWithExtension(
       source: ipaSource, destination: ipaDestination, extension: '.ipa');
-  
+
   final ipaPath =
       '../../build/ios/ipa/${path.basename(outputIpaFiles.first.path)}';
   return ipaPath;
@@ -175,10 +175,10 @@ Future<List<File>> _copyFilesWithExtension({
   required Directory source,
   required Directory destination,
   required String extension,
-  Pattern pattern = '',
+  String pattern = '',
 }) async {
   Printer.printNormal(
-      '''Copy files with extension = $extension and name pattern $pattern from
+      '''Copy files with extension = $extension and name pattern ${pattern.toLowerCase()} from
   ${source.path}
   to
   ${destination.path}''');
@@ -194,7 +194,7 @@ Future<List<File>> _copyFilesWithExtension({
     if (ext != extension) continue;
 
     final name = path.basename(entity.path);
-    if (!(name.contains(pattern))) continue;
+    if (!(name.contains(pattern.toLowerCase()))) continue;
 
     final sourceFile = File(entity.path);
     final destinationFile =
