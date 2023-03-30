@@ -36,9 +36,9 @@ init:
 	bundle install
 	
 ## Used to upload debug build in fabric. Usually, it is not called manually, it is necessary for the CI to work.
-beta:
-	bundle exec fastlane beta
+firebase:
+	bundle exec fastlane firebase
 
 ## Used to upload debug build in app_store. Usually, it is not called manually, it is necessary for the CI to work.
-release:
-	bundle exec fastlane release
+google_play:
+	bundle exec fastlane google_play

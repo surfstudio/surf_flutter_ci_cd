@@ -15,15 +15,15 @@ default_platform(:android)
 platform :android do
 
   desc "Submit a new debug build to Firebase App Distribution"
-  lane :beta do
+  lane :firebase do
     app_id = ENV["APP_ID"]
     groups = ENV["GROUPS"]
     firebase_cli_token = ENV["FIREBASE_TOKEN"]
     apk_path = ENV["APK_PATH"]
-    puts "APP_ID: #{app_id}"
-    puts "GROUPS: #{groups}"
-    puts "FIREBASE_TOKEN: #{firebase_cli_token}"
-    puts "APK_PATH: #{apk_path}"
+    puts "FASTLANE APP_ID: #{app_id}"
+    puts "FASTLANE GROUPS: #{groups}"
+    puts "FASTLANE FIREBASE_TOKEN: #{firebase_cli_token}"
+    puts "FASTLANE APK_PATH: #{apk_path}"
     puts "Firebase App Distribution"
     upload_to_fad(
       app_id: app_id,
@@ -47,4 +47,20 @@ platform :android do
         firebase_cli_token: "#{firebase_cli_token}",
       )
    end
+
+  lane :google_play do
+    aab_path = ENV["AAB_PATH"]
+    package_name = ENV["PKG_NAME"]
+    json_path = ENV["JSON_PATH"]
+    puts "FASTLANE AAB_PATH: #{aab_path}"
+    puts "FASTLANE PACKAGE_NAME: #{package_name}"
+    puts "FASTLANE JSON PATH: #{json_path}"
+    puts "Google Play Console"
+    # https://docs.fastlane.tools/actions/upload_to_play_store_internal_app_sharing/
+    upload_to_play_store_internal_app_sharing(
+      package_name: "#{package_name}",
+      aab: "#{aab_path}",
+      json_key: "#{json_path}",
+    )
+  end
 end

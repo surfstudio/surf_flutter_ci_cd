@@ -170,7 +170,15 @@ Future<void> _deploy(
             token: token,
           );
           break;
-        case 'play_market':
+        case 'gp':
+          final flavor = config[proj][env][target]['build']['flavor'] as String;
+          final packageName = config[proj][env][target]['deploy']['google_play']
+              ['package_name'] as String;
+
+          await deployAndroidToGPC(
+            packageName: packageName,
+            flavor: flavor,
+          );
           break;
         default:
           Printer.printError(

@@ -52,7 +52,68 @@ Future<void> deployAndroidToFirebase({
 
   await shell.run('rvm use 3.0.0');
   await shell.run('make -C $makefilePath init');
-  await shell.run('make -C $makefilePath beta');
+  await shell.run('make -C $makefilePath firebase');
+}
+
+Future<void> deployAndroidToGPC({
+  required String packageName,
+  required String flavor,
+}) async {
+  // Путь хранения собранного AppBundle файла.
+  final source =
+      Directory('${Directory.current.path}/build/app/outputs/bundle/');
+  // Путь до папки lib/ пакета внутри основного проекта.
+  final rootPath = await PackagePathResolver.packagePath();
+  // Путь в котором будет хранится скопированные данные из [source]
+  final destination = Directory('${rootPath}build/app/outputs/bundle/');
+
+  final outputAppFiles = await _copyFilesWithExtension(
+    source: source,
+    destination: destination,
+    extension: '.aab',
+    pattern: flavor,
+  );
+
+  final appPath =
+      '../../build/app/outputs/bundle/${path.basename(outputAppFiles.first.path)}';
+
+  await for (final file in destination.list(recursive: true)) {
+    Printer.printSuccess('AAB file path ${file.path}');
+  }
+
+  // Путь хранения ключа json.
+  final keySource = Directory('${Directory.current.path}/android/keystore/');
+
+  // Путь в котором будет хранится скопированный ключ из [keySource].
+  final keyDestination = Directory('${rootPath}android/keystore/');
+
+  final outputJsonFile = await _copyFilesWithExtension(
+      source: keySource, destination: keyDestination, extension: '.json');
+
+  final jsonPath =
+      '../../android/keystore/${path.basename(outputJsonFile.first.path)}';
+
+  await for (final file in keyDestination.list(recursive: true)) {
+    Printer.printSuccess('Json key file path ${file.path}');
+  }
+
+  // Создание переменных окружения.
+  final environment = ShellEnvironment(
+    environment: {
+      'AAB_PATH': appPath,
+      'PKG_NAME': packageName,
+      'JSON_PATH': jsonPath,
+    },
+  );
+  final shell = _createShellWithEnvironment(environment);
+
+  final makefilePath = await PackagePathResolver.resolve(
+    path: 'package:surf_flutter_ci_cd/lib/src/android/',
+  );
+
+  await shell.run('rvm use 3.0.0');
+  await shell.run('make -C $makefilePath init');
+  await shell.run('make -C $makefilePath google_play');
 }
 
 Future<void> deployIosToTestFlight({
@@ -189,7 +250,7 @@ Future<List<File>> _copyFilesWithExtension({
 
   final outputFiles = <File>[];
 
-  await for (final entity in source.list()) {
+  await for (final entity in source.list(recursive: true)) {
     final ext = path.extension(entity.path);
     if (ext != extension) continue;
 
