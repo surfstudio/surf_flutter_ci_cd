@@ -39,7 +39,7 @@ void main(List<String> arguments) {
     exit(1);
   }
 
-  if (env == null || proj == null || target == null) {
+  if (env == null || proj == null || target == null || deployTo == null) {
     print(
         'Missing arguments. Usage: dart script.dart [build|deploy] --env=<environment> --proj=<project> --target=<target platform>');
     exit(1);
@@ -48,14 +48,10 @@ void main(List<String> arguments) {
   switch (results.rest.isNotEmpty ? results.rest[0] : '') {
     case 'build':
       Printer.printNormal('Building $proj for $target in $env environment');
-      _build(proj, env, target);
+      _build(proj, env, target, deployTo);
       break;
     case 'deploy':
       Printer.printNormal('Deploying $proj for $target in $env environment');
-      if (deployTo == null) {
-        Printer.printError('Set deployTo params');
-        exit(1);
-      }
       _deploy(proj, env, target, deployTo);
       break;
     case 'full':
@@ -79,15 +75,15 @@ Future<void> _buildAndDeploy(
     exit(1);
   }
   Printer.printNormal('Building $proj for $target in $env environment');
-  await _build(proj, env, target);
+  await _build(proj, env, target, deployTo);
   Printer.printNormal('Deploying $proj for $target in $env environment');
   await _deploy(proj, env, target, deployTo);
 }
 
-Future<void> _build(String proj, String env, String target) async {
+Future<void> _build(
+    String proj, String env, String target, String deployTo) async {
   final yamlContent = await File('cd.yaml').readAsString();
   final config = loadYaml(yamlContent) as Map;
-  final ext = config[proj][env][target]['build']['extension'] as String;
   final flavor = config[proj][env][target]['build']['flavor'] as String;
   final entryPointPath = config[proj][env]['file_path'] as String;
   final flags = config[proj][env][target]['build']['flags'] as String;
@@ -100,7 +96,7 @@ Future<void> _build(String proj, String env, String target) async {
         buildType: env,
         entryPointPath: entryPointPath,
         projectName: proj,
-        format: PublishingFormat.fromString(ext) ?? PublishingFormat.appbundle,
+        format: PublishingFormat.fromDeployService(deployTo),
         flags: flags,
       );
       break;
