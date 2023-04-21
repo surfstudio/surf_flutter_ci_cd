@@ -6,12 +6,36 @@ import 'package:surf_flutter_ci_cd/src/util/printer.dart';
 import 'package:surf_flutter_ci_cd/surf_flutter_ci_cd.dart';
 import 'package:yaml/yaml.dart';
 
+/// Типы возможных таргетов для сборки проекта.
+enum TargetType { android, ios }
+
+/// Типы возможных таргетов для деплоя проекта.
+
+
+class FlagsName {
+  static const environment = 'env';
+  static const project = 'proj';
+  static const target = 'target';
+  static const deploy = 'deploy-to';
+}
+
+class MessageShow {
+  static Never exitWithShowUsage(ArgParser parser) {
+    print(_usage);
+    print(parser.usage);
+    exit(1);
+  }
+
+  static const _usage =
+      'Usage: flutter pub run surf_flutter_ci_cd [build|deploy|full] --env=<environment> --proj=<project> --target=<target platform>';
+}
+
 void main(List<String> arguments) {
   var parser = ArgParser();
-  parser.addOption('env', abbr: 'e', help: 'Environment name');
-  parser.addOption('proj', abbr: 'p', help: 'Project name');
-  parser.addOption('target', abbr: 't', help: 'Target platform');
-  parser.addOption('deploy-to', abbr: 'd', help: 'Deploy to platform');
+  parser.addOption(FlagsName.environment, abbr: 'e', help: 'Environment name');
+  parser.addOption(FlagsName.project, abbr: 'p', help: 'Project name');
+  parser.addOption(FlagsName.target, abbr: 't', help: 'Target platform');
+  parser.addOption(FlagsName.deploy, abbr: 'd', help: 'Deploy to platform');
 
   final String? env;
   final String? proj;
@@ -21,10 +45,10 @@ void main(List<String> arguments) {
 
   try {
     results = parser.parse(arguments);
-    env = results['env'];
-    proj = results['proj'];
-    target = results['target'];
-    deployTo = results['deploy-to'];
+    env = results[FlagsName.environment];
+    proj = results[FlagsName.project];
+    target = results[FlagsName.target];
+    deployTo = results[FlagsName.deploy];
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
@@ -33,34 +57,37 @@ void main(List<String> arguments) {
   if (arguments.isEmpty ||
       arguments.contains('-h') ||
       arguments.contains('--help')) {
-    print(
-        'Usage: dart script.dart [build|deploy] --env=<environment> --proj=<project> --target=<target platform>');
-    print(parser.usage);
-    exit(1);
+    MessageShow.exitWithShowUsage(parser);
   }
 
-  if (env == null || proj == null || target == null || deployTo == null) {
-    print(
-        'Missing arguments. Usage: dart script.dart [build|deploy] --env=<environment> --proj=<project> --target=<target platform>');
-    exit(1);
+  if (env == null || proj == null || target == null) {
+    print('Missing arguments.');
+    MessageShow.exitWithShowUsage(parser);
   }
 
   switch (results.rest.isNotEmpty ? results.rest[0] : '') {
     case 'build':
       Printer.printNormal('Building $proj for $target in $env environment');
-      _build(proj, env, target, deployTo);
+      _build(proj, env, target);
       break;
     case 'deploy':
-      Printer.printNormal('Deploying $proj for $target in $env environment');
+      if (deployTo == null) {
+        Printer.printError('Please specify the flag deploy.');
+        MessageShow.exitWithShowUsage(parser);
+      }
+      Printer.printNormal('Deploying $proj for $target in $env environment.');
       _deploy(proj, env, target, deployTo);
       break;
     case 'full':
+      if (deployTo == null) {
+        Printer.printError('Please specify the flag deploy.');
+        MessageShow.exitWithShowUsage(parser);
+      }
       _buildAndDeploy(proj, env, target, deployTo);
       break;
     default:
-      Printer.printError(
-          'Invalid command. Use [build|deploy] --env=<environment> --proj=<project> --target=<target platform> --deploy-to=<deploy platform>');
-      exit(1);
+      Printer.printError('Invalid command.');
+      MessageShow.exitWithShowUsage(parser);
   }
 }
 
@@ -68,25 +95,25 @@ Future<void> _buildAndDeploy(
   String proj,
   String env,
   String target,
-  String? deployTo,
+  String deployTo,
 ) async {
-  if (deployTo == null) {
-    Printer.printError('Set deployTo params');
-    exit(1);
-  }
   Printer.printNormal('Building $proj for $target in $env environment');
-  await _build(proj, env, target, deployTo);
+  await _build(proj, env, target);
   Printer.printNormal('Deploying $proj for $target in $env environment');
   await _deploy(proj, env, target, deployTo);
 }
 
 Future<void> _build(
-    String proj, String env, String target, String deployTo) async {
+  String proj,
+  String env,
+  String target,
+) async {
   final yamlContent = await File('cd.yaml').readAsString();
   final config = loadYaml(yamlContent) as Map;
   final flavor = config[proj][env][target]['build']['flavor'] as String;
   final entryPointPath = config[proj][env]['file_path'] as String;
   final flags = config[proj][env][target]['build']['flags'] as String;
+  final extension = config[proj][env][target]['build']['extension'] as String;
 
   switch (target) {
     case 'android':
@@ -96,7 +123,7 @@ Future<void> _build(
         buildType: env,
         entryPointPath: entryPointPath,
         projectName: proj,
-        format: PublishingFormat.fromDeployService(deployTo),
+        format: PublishingFormat.fromString(extension) ?? PublishingFormat.apk,
         flags: flags,
       );
       break;

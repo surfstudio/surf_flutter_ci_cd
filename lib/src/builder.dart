@@ -12,7 +12,7 @@ Future<void> buildAndroidOutput({
   required String entryPointPath,
   required String projectName,
   required String flags,
-  PublishingFormat format = PublishingFormat.appbundle,
+  PublishingFormat format = PublishingFormat.apk,
 }) async {
   exitCode = 0;
   Printer.printWarning(
