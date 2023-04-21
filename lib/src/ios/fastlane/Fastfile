@@ -62,7 +62,7 @@ platform :ios do
       ipa_path: ipa_path,
       groups: groups,
       firebase_cli_token: firebase_cli_token,
-      release_notes: "TODO: Get from Github tag release note",
+      release_notes: ENV["CHANGELOG"] || "TODO: Get from Github tag release note",
    )
   end
     lane :upload_to_fad do |options|
