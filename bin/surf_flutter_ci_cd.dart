@@ -6,12 +6,6 @@ import 'package:surf_flutter_ci_cd/src/util/printer.dart';
 import 'package:surf_flutter_ci_cd/surf_flutter_ci_cd.dart';
 import 'package:yaml/yaml.dart';
 
-/// Типы возможных таргетов для сборки проекта.
-enum TargetType { android, ios }
-
-/// Типы возможных таргетов для деплоя проекта.
-
-
 class FlagsName {
   static const environment = 'env';
   static const project = 'proj';
@@ -54,9 +48,7 @@ void main(List<String> arguments) {
     exit(1);
   }
 
-  if (arguments.isEmpty ||
-      arguments.contains('-h') ||
-      arguments.contains('--help')) {
+  if (arguments.isEmpty || arguments.contains('-h') || arguments.contains('--help')) {
     MessageShow.exitWithShowUsage(parser);
   }
 
@@ -103,6 +95,7 @@ Future<void> _buildAndDeploy(
   await _deploy(proj, env, target, deployTo);
 }
 
+/// Функция сборки приложения.
 Future<void> _build(
   String proj,
   String env,
@@ -115,10 +108,10 @@ Future<void> _build(
   final flags = config[proj][env][target]['build']['flags'] as String;
   final extension = config[proj][env][target]['build']['extension'] as String;
 
-  switch (target) {
-    case 'android':
+  final targets = {
+    'android': () async {
       Printer.printWarning('Android build started');
-      await buildAndroidOutput(
+      return await buildAndroidOutput(
         flavor: flavor,
         buildType: env,
         entryPointPath: entryPointPath,
@@ -126,23 +119,30 @@ Future<void> _build(
         format: PublishingFormat.fromString(extension) ?? PublishingFormat.apk,
         flags: flags,
       );
-      break;
-    case 'ios':
+    },
+    'ios': () async {
       Printer.printWarning('Ios build started');
-      await buildIosOutput(
+      return await buildIosOutput(
         flavor: flavor,
         buildType: env,
         entryPointPath: entryPointPath,
         flags: flags,
       );
-      break;
-    default:
-      Printer.printError(
-          'Invalid command. Use [build|deploy] --env=<environment> --proj=<project> --target=<target platform> --deploy-to=<deploy platform>');
-      exit(1);
+    }
+  };
+
+  final buildFunction = targets[target];
+
+  if (buildFunction == null) {
+    Printer.printError(
+        'Invalid command. Use [build|deploy] --env=<environment> --proj=<project> --target=<target platform> --deploy-to=<deploy platform>');
+    exit(1);
   }
+
+  await buildFunction.call();
 }
 
+/// Функция деплоя приложения.
 Future<void> _deploy(
   String proj,
   String env,
@@ -152,86 +152,77 @@ Future<void> _deploy(
   final yamlContent = await File('cd.yaml').readAsString();
   final config = loadYaml(yamlContent) as Map;
 
+  // Чтение secret.yaml
+  String? firebaseToken;
+  String? testflightKeyId;
+  String? testflightIssuerId;
+  final secretsMap = await _loadSecretsYaml();
+
+  firebaseToken = secretsMap['firebase_token'] as String;
+  testflightKeyId = secretsMap['testflight_key_id'] as String;
+  testflightIssuerId = secretsMap['testflight_issuer_id'] as String;
+
+  final targets = {
+    'android': {
+      'fb': () async {
+        final androidConfig = _getAndroidConfig(config, proj, env);
+        final appId = androidConfig['deploy']['firebase']['firebase_app_id'] as String;
+        final groups = androidConfig['deploy']['firebase']['groups'] as String;
+        final flavor = androidConfig['build']['flavor'] as String;
+        return await deployAndroidToFirebase(appId: appId, groups: groups, flavor: flavor, token: firebaseToken);
+      },
+      'gp': () async {
+        final androidConfig = _getAndroidConfig(config, proj, env);
+        final packageName = androidConfig['deploy']['google_play']['package_name'] as String;
+        final flavor = androidConfig['build']['flavor'] as String;
+        return await deployAndroidToGPC(packageName: packageName, flavor: flavor);
+      },
+    },
+    'ios': {
+      'tf': () async {
+        return await deployIosToTestFlight(keyId: testflightKeyId, issuerId: testflightIssuerId);
+      },
+      'fb': () async {
+        final iosConfig = _getIosConfig(config, proj, env);
+        final appId = iosConfig['deploy']['firebase']['firebase_app_id'] as String;
+        final groups = iosConfig['deploy']['firebase']['groups'] as String;
+        return await deployIosToFirebase(appId: appId, groups: groups, token: firebaseToken);
+      },
+    },
+  };
+
+  final targetMap = targets[target];
+  if (targetMap == null) {
+    Printer.printError('Wrong target param. Current value: $target');
+    exit(1);
+  }
+
+  final deployFunction = targetMap[deployTo];
+  if (deployFunction == null) {
+    Printer.printError('Wrong deployTo param for $target. Current value: $deployTo');
+    exit(1);
+  }
+
+  await deployFunction();
+}
+
+Future<Map<dynamic, dynamic>> _loadSecretsYaml() async {
   final secretsYaml = File('secrets.yaml');
-  final Map<dynamic, dynamic> secretsMap = {};
-  final String? token;
-  final String? testflightKeyId;
-  final String? testflightIssuerId;
+  final secretsMap = <dynamic, dynamic>{};
   if (secretsYaml.existsSync()) {
-    secretsMap.addAll(
-        loadYaml(await secretsYaml.readAsString()) as Map<dynamic, dynamic>);
-    token = secretsMap['firebase_token'] as String;
-    testflightKeyId = secretsMap['testflight_key_id'] as String;
-    testflightIssuerId = secretsMap['testflight_issuer_id'] as String;
-    Printer.printWarning('''Local deploy with secrets:
-    firebase_token: $token
-    testflight_key_id: $testflightKeyId
-    testflight_issuer_id: $testflightIssuerId
-''');
+    secretsMap.addAll(loadYaml(await secretsYaml.readAsString()) as Map<dynamic, dynamic>);
+    Printer.printWarning('Local deploy with secrets:');
+    secretsMap.forEach((key, value) => Printer.printWarning('$key: $value'));
   } else {
-    token = null;
-    testflightKeyId = null;
-    testflightIssuerId = null;
     Printer.printWarning('Remote deploy');
   }
+  return secretsMap;
+}
 
-  switch (target) {
-    case 'android':
-      switch (deployTo) {
-        // Firebase
-        case 'fb':
-          final appId = config[proj][env][target]['deploy']['firebase']
-              ['firebase_app_id'] as String;
-          final groups = config[proj][env][target]['deploy']['firebase']
-              ['groups'] as String;
-          final flavor = config[proj][env][target]['build']['flavor'] as String;
+Map<String, dynamic> _getAndroidConfig(Map<dynamic, dynamic> config, String proj, String env) {
+  return config[proj][env]['android'] as Map<String, dynamic>;
+}
 
-          await deployAndroidToFirebase(
-            appId: appId,
-            groups: groups,
-            flavor: flavor,
-            token: token,
-          );
-          break;
-        case 'gp':
-          final flavor = config[proj][env][target]['build']['flavor'] as String;
-          final packageName = config[proj][env][target]['deploy']['google_play']
-              ['package_name'] as String;
-
-          await deployAndroidToGPC(
-            packageName: packageName,
-            flavor: flavor,
-          );
-          break;
-        default:
-          Printer.printError(
-              'Wrong deployTo param for android. Current value: $deployTo');
-          exit(1);
-      }
-      break;
-    case 'ios':
-      switch (deployTo) {
-        // TestFlight
-        case 'tf':
-          await deployIosToTestFlight(
-              keyId: testflightKeyId, issuerId: testflightIssuerId);
-          break;
-        case 'fb':
-          final appId = config[proj][env][target]['deploy']['firebase']
-              ['firebase_app_id'] as String;
-          final groups = config[proj][env][target]['deploy']['firebase']
-              ['groups'] as String;
-          deployIosToFirebase(appId: appId, groups: groups, token: token);
-
-          break;
-        default:
-          Printer.printError(
-              'Wrong deployTo param for ios. Current value: $deployTo');
-          exit(1);
-      }
-      break;
-    default:
-      Printer.printError('Wrong target param. Current value: $target');
-      exit(1);
-  }
+Map<String, dynamic> _getIosConfig(Map<dynamic, dynamic> config, String proj, String env) {
+  return config[proj][env]['ios'] as Map<String, dynamic>;
 }
