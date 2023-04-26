@@ -18,10 +18,13 @@ class BuildConfig {
 
   static Future<BuildConfig> create(String proj, String env, String target) async {
     final config = await readYamlConfig();
-    final flavor = config[proj]?[env]?[target]?['build']['flavor'] as String?;
-    final entryPointPath = config[proj]?[env]?['file_path'] as String?;
-    final flags = config[proj]?[env]?[target]?['build']['flags'] as String?;
-    final extension = config[proj]?[env]?[target]?['build']['extension'] as String?;
+    final envMap = config[proj]?[env];
+    final buildMap = envMap?[target]?['build'];
+
+    final flavor = buildMap['flavor'] as String?;
+    final entryPointPath = envMap?['file_path'] as String?;
+    final flags = buildMap['flags'] as String?;
+    final extension = buildMap['extension'] as String?;
 
     if (flavor == null || entryPointPath == null || flags == null || extension == null) {
       Printer.printError('Wrong cd.yaml configuration');

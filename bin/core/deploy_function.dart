@@ -53,8 +53,10 @@ class DeployAndroidFB implements DeployFunction {
       MessageShow.exitWithShowUsage();
     }
     final androidConfig = _getAndroidConfig(config, project, env);
-    final appId = androidConfig['deploy']['firebase']['firebase_app_id'] as String;
-    final groups = androidConfig['deploy']['firebase']['groups'] as String;
+    final firebaseMap = androidConfig['deploy']['firebase'];
+
+    final appId = firebaseMap['firebase_app_id'] as String;
+    final groups = firebaseMap['groups'] as String;
     final flavor = androidConfig['build']['flavor'] as String;
     return deployAndroidToFirebase(appId: appId, groups: groups, flavor: flavor, token: secrets.firebaseToken);
   }
@@ -97,8 +99,10 @@ class DeployIosFB implements DeployFunction {
       MessageShow.exitWithShowUsage();
     }
     final iosConfig = _getIosConfig(config, project, env);
-    final appId = iosConfig['deploy']['firebase']['firebase_app_id'] as String;
-    final groups = iosConfig['deploy']['firebase']['groups'] as String;
+    final firebaseMap = iosConfig['deploy']['firebase'];
+
+    final appId = firebaseMap['firebase_app_id'] as String;
+    final groups = firebaseMap['groups'] as String;
     return deployIosToFirebase(appId: appId, groups: groups, token: secrets.firebaseToken);
   }
 }
