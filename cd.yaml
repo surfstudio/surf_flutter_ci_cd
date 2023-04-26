@@ -7,6 +7,8 @@ default:
     file_path: 'lib/main-dev.dart'
     ios:
       build:
+        # Расширение собираемое при сборке приложения. Для iOS всегда собирается ipa. Для Android либо apk, либо appbundle. 
+        extension: 'ipa'
         # Указать flavor. Используется в команде сборки приложения.
         flavor: 'dev'
         # Дополнительные флаги при сборке приложения.
@@ -27,6 +29,8 @@ default:
           groups: 'GROUP'
     android:
       build:
+        # Расширение собираемое при сборке приложения. Для iOS всегда собирается ipa. Для Android либо apk, либо appbundle. 
+        extension: 'apk'
         # Указать flavor. Используется в команде сборки приложения.
         flavor: 'dev'
         # Дополнительные флаги при сборке приложения. 
@@ -49,6 +53,8 @@ default:
     file_path: 'lib/main-prod.dart'
     ios:
       build:
+        # Расширение собираемое при сборке приложения. Для iOS всегда собирается ipa. Для Android либо apk, либо appbundle. 
+        extension: 'ipa'
         # Указать flavor. Используется в команде сборки приложения.
         flavor: 'prod'
         # Дополнительные флаги при сборке приложения.
@@ -69,6 +75,8 @@ default:
           groups: 'GROUP'
     android:
       build:
+        # Расширение собираемое при сборке приложения. Для iOS всегда собирается ipa. Для Android либо apk, либо appbundle. 
+        extension: 'appbundle'
         # Указать flavor. Используется в команде сборки приложения.
         flavor: 'prod'
         # Дополнительные флаги при сборке приложения. 
