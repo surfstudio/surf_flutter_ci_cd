@@ -10,7 +10,6 @@ Future<void> buildAndroidOutput({
   required String flavor,
   required String buildType,
   required String entryPointPath,
-  required String projectName,
   required String flags,
   PublishingFormat format = PublishingFormat.apk,
 }) async {
@@ -37,8 +36,7 @@ Future<void> buildAndroidOutput({
     await shell.run('fvm flutter pub get');
 
     Printer.printNormal('Build start Android start with flags:');
-    await shell.run(
-        'fvm flutter build ${format.format} -t $entryPointPath --flavor $flavor $flags');
+    await shell.run('fvm flutter build ${format.format} -t $entryPointPath --flavor $flavor $flags');
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
@@ -53,8 +51,7 @@ Future<void> buildIosOutput({
 }) async {
   exitCode = 0;
 
-  Printer.printWarning(
-      'Build type: $buildType, Format: ipa, Flavor: $flavor, Target: $entryPointPath, flags: $flags');
+  Printer.printWarning('Build type: $buildType, Format: ipa, Flavor: $flavor, Target: $entryPointPath, flags: $flags');
 
   try {
     final stdoutController = StreamController<List<int>>();
@@ -75,8 +72,7 @@ Future<void> buildIosOutput({
     await shell.run('fvm flutter pub get');
 
     Printer.printNormal('Build start Android start with flags:');
-    await shell.run(
-        'fvm flutter build ipa -t $entryPointPath --flavor $flavor $flags');
+    await shell.run('fvm flutter build ipa -t $entryPointPath --flavor $flavor $flags');
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
