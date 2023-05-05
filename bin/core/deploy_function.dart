@@ -1,12 +1,13 @@
 import 'package:surf_flutter_ci_cd/src/deployer.dart';
 import 'package:surf_flutter_ci_cd/src/util/printer.dart';
+import 'package:yaml/yaml.dart';
 
 import 'deploy_secrets.dart';
 import 'message_show.dart';
 
 abstract class DeployFunction {
   Future<void> call({
-    required Map<dynamic, dynamic> config,
+    required YamlMap config,
     required String project,
     required String env,
     required DeploySecrets secrets,
@@ -43,7 +44,7 @@ class DeployAndroidFB implements DeployFunction {
   const DeployAndroidFB();
   @override
   Future<void> call({
-    required Map config,
+    required YamlMap config,
     required String project,
     required String env,
     required DeploySecrets secrets,
@@ -66,7 +67,7 @@ class DeployAndroidGP implements DeployFunction {
   const DeployAndroidGP();
   @override
   Future<void> call(
-      {required Map config, required String project, required String env, required DeploySecrets secrets}) {
+      {required YamlMap config, required String project, required String env, required DeploySecrets secrets}) {
     final androidConfig = _getAndroidConfig(config, project, env);
     final packageName = androidConfig['deploy']['google_play']['package_name'] as String;
     final flavor = androidConfig['build']['flavor'] as String;
@@ -78,7 +79,7 @@ class DeployIosTF implements DeployFunction {
   const DeployIosTF();
   @override
   Future<void> call(
-      {required Map config, required String project, required String env, required DeploySecrets secrets}) {
+      {required YamlMap config, required String project, required String env, required DeploySecrets secrets}) {
     if (secrets.testflightKeyId.isEmpty || secrets.testflightIssuerId.isEmpty) {
       Printer.printError(
           'Specify the testflight_key_id and testflight_issuer_id in secrets.yaml for deploy to TestFlight.');
@@ -93,7 +94,7 @@ class DeployIosFB implements DeployFunction {
 
   @override
   Future<void> call(
-      {required Map config, required String project, required String env, required DeploySecrets secrets}) {
+      {required YamlMap config, required String project, required String env, required DeploySecrets secrets}) {
     if (secrets.firebaseToken.isEmpty) {
       Printer.printError('Specify the firebase_token in secrets.yaml for deploy to Firebase.');
       MessageShow.exitWithShowUsage();
@@ -107,10 +108,10 @@ class DeployIosFB implements DeployFunction {
   }
 }
 
-Map<String, dynamic> _getAndroidConfig(Map<dynamic, dynamic> config, String proj, String env) {
-  return config[proj][env]['android'] as Map<String, dynamic>;
+YamlMap _getAndroidConfig(YamlMap config, String proj, String env) {
+  return config[proj][env]['android'] as YamlMap;
 }
 
-Map<String, dynamic> _getIosConfig(Map<dynamic, dynamic> config, String proj, String env) {
-  return config[proj][env]['ios'] as Map<String, dynamic>;
+YamlMap _getIosConfig(YamlMap config, String proj, String env) {
+  return config[proj][env]['ios'] as YamlMap;
 }

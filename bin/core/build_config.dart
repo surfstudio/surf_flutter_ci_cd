@@ -21,10 +21,10 @@ class BuildConfig {
     final envMap = config[proj]?[env];
     final buildMap = envMap?[target]?['build'];
 
-    final flavor = buildMap['flavor'] as String?;
+    final flavor = buildMap?['flavor'] as String?;
     final entryPointPath = envMap?['file_path'] as String?;
-    final flags = buildMap['flags'] as String?;
-    final extension = buildMap['extension'] as String?;
+    final flags = buildMap?['flags'] as String?;
+    final extension = buildMap?['extension'] as String?;
 
     if (flavor == null || entryPointPath == null || flags == null || extension == null) {
       Printer.printError('Wrong cd.yaml configuration');
