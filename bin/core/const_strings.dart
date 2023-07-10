@@ -13,16 +13,16 @@ class ConstStrings {
   static const flagDeploy = 'deploy-to';
 
   /// Сокращённое название флага используемого окружения.
-  static const flagEnvironmentAbbr = 'env';
+  static const flagEnvironmentAbbr = 'e';
 
   /// Сокращённое название флага указания используемого проекта.
-  static const flagProjectAbbr = 'proj';
+  static const flagProjectAbbr = 'p';
 
   /// Сокращённое название флага используемого таргета
-  static const flagTargetAbbr = 'target';
+  static const flagTargetAbbr = 't';
 
   /// Сокращённое название флага указания метода выгрузки артефакта.
-  static const flagDeployAbbr = 'deploy-to';
+  static const flagDeployAbbr = 'd';
 
   /// Подсказка флага используемого окружения.
   static const flagEnvironmentHint = 'Environment name';
