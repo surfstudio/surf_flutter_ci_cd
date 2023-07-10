@@ -7,16 +7,22 @@ import 'deploy_secrets.dart';
 import 'message_show.dart';
 import 'yaml_utils.dart';
 
+const _buildCommand = 'build';
+const _deployCommand = 'deploy';
+const _buildAndDeployCommand = 'full';
+
+/// Общая команда, которая определяет в зависимости от вызова, какую команду требуется вызвать.
 abstract class CommandFunction {
   Future<void> call(String proj, String env, String target, String? deployTo);
 
+  /// Создаёт требуемую команду, в зависимости от переданной команды в параметре [mainCommand].
   factory CommandFunction.create(String mainCommand) {
     switch (mainCommand) {
-      case 'build':
+      case _buildCommand:
         return BuildCommand();
-      case 'deploy':
+      case _deployCommand:
         return DeployCommand();
-      case 'full':
+      case _buildAndDeployCommand:
         return BuildAndDeployCommand();
       default:
         Printer.printError('Invalid command.');
@@ -25,6 +31,7 @@ abstract class CommandFunction {
   }
 }
 
+/// Команда сборки проекта без выгрузки.
 class BuildCommand implements CommandFunction {
   @override
   Future<void> call(
@@ -37,7 +44,7 @@ class BuildCommand implements CommandFunction {
       build(proj, env, target);
 }
 
-/// Функция сборки приложения.
+/// Вызов сборки приложения через соответствующую функцию.
 Future<void> build(
   String proj,
   String env,
@@ -58,6 +65,7 @@ Future<void> build(
   );
 }
 
+/// Команда выгрузки проекта без сборки.
 class DeployCommand implements CommandFunction {
   @override
   Future<void> call(
@@ -74,7 +82,7 @@ class DeployCommand implements CommandFunction {
   }
 }
 
-/// Функция деплоя приложения.
+/// Вызов выгрузки приложения через соответствующую функцию.
 Future<void> deploy(
   String proj,
   String env,
@@ -92,6 +100,7 @@ Future<void> deploy(
   await deployFunction(config: config, env: env, project: proj, secrets: secrets);
 }
 
+/// Команда сборки и выгрузки приложения.
 class BuildAndDeployCommand implements CommandFunction {
   @override
   Future<void> call(
@@ -108,6 +117,7 @@ class BuildAndDeployCommand implements CommandFunction {
   }
 }
 
+/// Вызов сборки приложения и выгрузки через соответствующие функции.
 Future<void> buildAndDeploy(
   String proj,
   String env,

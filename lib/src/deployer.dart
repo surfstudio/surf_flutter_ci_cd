@@ -7,6 +7,7 @@ import 'package:surf_flutter_ci_cd/src/util/package_path_converter.dart';
 import 'package:surf_flutter_ci_cd/src/util/printer.dart';
 import 'package:path/path.dart' as path;
 
+/// Запуск выгрузки Android артефакта в Firebase.
 Future<void> deployAndroidToFirebase({
   required String appId,
   required String groups,
@@ -14,8 +15,7 @@ Future<void> deployAndroidToFirebase({
   String? token,
 }) async {
   // Путь хранения собранного APK файла.
-  final source =
-      Directory('${Directory.current.path}/build/app/outputs/flutter-apk/');
+  final source = Directory('${Directory.current.path}/build/app/outputs/flutter-apk/');
   // Путь до папки lib/ пакета внутри основного проекта.
   final rootPath = await PackagePathResolver.packagePath();
   // Путь в котором будет хранится скопированные данные из [source]
@@ -28,8 +28,7 @@ Future<void> deployAndroidToFirebase({
     pattern: flavor,
   );
 
-  final apkPath =
-      '../../build/app/outputs/flutter-apk/${path.basename(outputApkFiles.first.path)}';
+  final apkPath = '../../build/app/outputs/flutter-apk/${path.basename(outputApkFiles.first.path)}';
 
   await for (final file in destination.list(recursive: true)) {
     Printer.printSuccess('APK file path ${file.path}');
@@ -55,13 +54,13 @@ Future<void> deployAndroidToFirebase({
   await shell.run('make -C $makefilePath firebase');
 }
 
+/// Выгрузка Android-артефакта в Google Play.
 Future<void> deployAndroidToGPC({
   required String packageName,
   required String flavor,
 }) async {
   // Путь хранения собранного AppBundle файла.
-  final source =
-      Directory('${Directory.current.path}/build/app/outputs/bundle/');
+  final source = Directory('${Directory.current.path}/build/app/outputs/bundle/');
   // Путь до папки lib/ пакета внутри основного проекта.
   final rootPath = await PackagePathResolver.packagePath();
   // Путь в котором будет хранится скопированные данные из [source]
@@ -74,8 +73,7 @@ Future<void> deployAndroidToGPC({
     pattern: flavor,
   );
 
-  final appPath =
-      '../../build/app/outputs/bundle/${path.basename(outputAppFiles.first.path)}';
+  final appPath = '../../build/app/outputs/bundle/${path.basename(outputAppFiles.first.path)}';
 
   await for (final file in destination.list(recursive: true)) {
     Printer.printSuccess('AAB file path ${file.path}');
@@ -90,8 +88,7 @@ Future<void> deployAndroidToGPC({
   final outputJsonFile = await _copyFilesWithExtension(
       source: keySource, destination: keyDestination, extension: '.json');
 
-  final jsonPath =
-      '../../android/keystore/${path.basename(outputJsonFile.first.path)}';
+  final jsonPath = '../../android/keystore/${path.basename(outputJsonFile.first.path)}';
 
   await for (final file in keyDestination.list(recursive: true)) {
     Printer.printSuccess('Json key file path ${file.path}');
@@ -116,6 +113,7 @@ Future<void> deployAndroidToGPC({
   await shell.run('make -C $makefilePath google_play');
 }
 
+/// Выгрузка iOS-артефакта в TestFlight.
 Future<void> deployIosToTestFlight({
   String? keyId,
   String? issuerId,
@@ -157,6 +155,7 @@ Future<void> deployIosToTestFlight({
   await shell.run('make -C $makefilePath testflight');
 }
 
+/// Выгрузка iOS-артефакта в Firebase.
 Future<void> deployIosToFirebase({
   required String appId,
   required String groups,
@@ -173,7 +172,7 @@ Future<void> deployIosToFirebase({
     'APP_ID': appId,
     'GROUPS': groups,
     'IPA_PATH': ipaPath,
-    // По умолчанию токен добавляется в окружение на CICD.
+    // По умолчанию токен добавляется в окружение на CI/CD.
     if (token != null) 'FIREBASE_TOKEN': token,
   });
 
@@ -200,12 +199,11 @@ Future<String> _getIpaPath(String rootPath) async {
   final outputIpaFiles = await _copyFilesWithExtension(
       source: ipaSource, destination: ipaDestination, extension: '.ipa');
 
-  final ipaPath =
-      '../../build/ios/ipa/${path.basename(outputIpaFiles.first.path)}';
+  final ipaPath = '../../build/ios/ipa/${path.basename(outputIpaFiles.first.path)}';
   return ipaPath;
 }
 
-/// Создание Shell.
+/// Создание Shell оболочки с данными окружения [environment].
 Shell _createShellWithEnvironment(ShellEnvironment environment) {
   final stdoutController = StreamController<List<int>>();
   final stderrController = StreamController<List<int>>();
@@ -230,8 +228,11 @@ Shell _createShellWithEnvironment(ShellEnvironment environment) {
   return shell;
 }
 
-/// Указывать расширение [extension] в формате '.apk', '.ipa'.
-/// Возвращает копированный файл.
+/// Копирует файлы из [source] в [destination].
+///
+/// - [extension] - расширение файлов в формате '.apk' или '.ipa'.
+///
+/// Возвращает список скопированных файлов.
 Future<List<File>> _copyFilesWithExtension({
   required Directory source,
   required Directory destination,
@@ -258,8 +259,7 @@ Future<List<File>> _copyFilesWithExtension({
     if (!(name.contains(pattern.toLowerCase()))) continue;
 
     final sourceFile = File(entity.path);
-    final destinationFile =
-        File('${destination.path}/${sourceFile.path.split('/').last}');
+    final destinationFile = File('${destination.path}/${sourceFile.path.split('/').last}');
     final outputFile = await sourceFile.copy(destinationFile.path);
     outputFiles.add(outputFile);
   }
@@ -273,8 +273,7 @@ Future<List<File>> _copyFilesWithExtension({
 
   /// Если итоговый файл не создался, то выводим ошибку и останавливаем программу.
   if (outputFiles.isEmpty) {
-    Printer.printError(
-        'No such file with extension $extension in $source or can not copy file.');
+    Printer.printError('No such file with extension $extension in $source or can not copy file.');
     exit(1);
   }
 

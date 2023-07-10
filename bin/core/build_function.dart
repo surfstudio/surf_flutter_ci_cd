@@ -3,7 +3,12 @@ import 'package:surf_flutter_ci_cd/surf_flutter_ci_cd.dart';
 
 import 'message_show.dart';
 
+const _androidTarget = 'android';
+const _iosTarget = 'ios';
+
+/// Команда для вызова утилитой для выполнения основной работы.
 abstract class BuildFunction {
+  /// Метод вызова операции.
   Future<void> call({
     required String flavor,
     required String buildType,
@@ -12,10 +17,11 @@ abstract class BuildFunction {
     required String extension,
   });
 
+  /// Создание функции в зависимости от значение платформы [target].
   factory BuildFunction.create(String target) {
     const targets = {
-      'android': BuildAndroid(),
-      'ios': BuildIos(),
+      _androidTarget: BuildAndroid(),
+      _iosTarget: BuildIos(),
     };
 
     final buildFunction = targets[target];
@@ -28,6 +34,7 @@ abstract class BuildFunction {
   }
 }
 
+/// Команда для сборки Android-артефакта.
 class BuildAndroid implements BuildFunction {
   const BuildAndroid();
 
@@ -50,6 +57,7 @@ class BuildAndroid implements BuildFunction {
   }
 }
 
+/// Команда для сборки iOS-артефакта.
 class BuildIos implements BuildFunction {
   const BuildIos();
 
@@ -62,7 +70,7 @@ class BuildIos implements BuildFunction {
     // Не используется. Передается для совпадения сигнатур у всех основных команд.
     required String extension,
   }) async {
-    Printer.printWarning('Ios build started');
+    Printer.printWarning('iOS build started');
     return buildIosOutput(
       flavor: flavor,
       buildType: buildType,

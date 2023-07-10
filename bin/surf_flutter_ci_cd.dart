@@ -1,10 +1,9 @@
-import 'package:args/args.dart';
-
+import 'core/argument_parser_factory.dart';
 import 'core/arguments.dart';
-import 'core/const_strings.dart';
 import 'core/function_command.dart';
 import 'core/message_show.dart';
 
+/// Точка входа в приложение.
 void main(List<String> arguments) {
   try {
     cdProcess(arguments);
@@ -13,23 +12,15 @@ void main(List<String> arguments) {
   }
 }
 
+/// Запуск основного процесса.
 void cdProcess(List<String> arguments) {
-  // Парсер.
+  // Создание парсера для разбора аргументов, переданных при запуске.
   final parser = createParser();
-  // Аргументы.
+  // Полученные аргументы.
   final Arguments args = Arguments.parseAndCheck(arguments, parser);
-
+  // Команда, которая создана после разбора аргументов.
   final command = CommandFunction.create(args.mainCommand);
 
+  /// Выполнение команды.
   command(args.proj, args.env, args.target, args.deployTo);
-}
-
-/// Метод создания парсера аргументов.
-ArgParser createParser() {
-  final parser = ArgParser();
-  parser.addOption(ConstStrings.flagEnvironment, abbr: 'e', help: 'Environment name');
-  parser.addOption(ConstStrings.flagProject, abbr: 'p', help: 'Project name');
-  parser.addOption(ConstStrings.flagTarget, abbr: 't', help: 'Target platform');
-  parser.addOption(ConstStrings.flagDeploy, abbr: 'd', help: 'Deploy to platform');
-  return parser;
 }
