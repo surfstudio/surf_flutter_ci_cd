@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:surf_flutter_ci_cd/src/util/printer.dart';
+
 import 'core/argument_parser_factory.dart';
 import 'core/arguments.dart';
 import 'core/function_command.dart';
@@ -7,13 +11,19 @@ import 'core/message_show.dart';
 void main(List<String> arguments) {
   try {
     cdProcess(arguments);
-  } on Object catch (_) {
+  } on Object catch (error, stackTrace) {
+    Printer.printError('Error while execution cd process: $error');
+    Printer.printError('With stack trace: $stackTrace');
     MessageShow.exitWithShowUsage();
   }
 }
 
 /// Запуск основного процесса.
 void cdProcess(List<String> arguments) {
+  // Получение пути для вызова flutter.
+  final flutterPath = Platform.environment['FLUTTER_ROOT'];
+  final flutter = '$flutterPath/bin/flutter';
+
   // Создание парсера для разбора аргументов, переданных при запуске.
   final parser = createParser();
   // Полученные аргументы.
@@ -22,5 +32,5 @@ void cdProcess(List<String> arguments) {
   final command = CommandFunction.create(args.mainCommand);
 
   /// Выполнение команды.
-  command(args.proj, args.env, args.target, args.deployTo);
+  command(flutter, args.proj, args.env, args.target, args.deployTo);
 }

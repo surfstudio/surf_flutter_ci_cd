@@ -10,6 +10,7 @@ const _iosTarget = 'ios';
 abstract class BuildFunction {
   /// Метод вызова операции.
   Future<void> call({
+    required String flutter,
     required String flavor,
     required String buildType,
     required String entryPointPath,
@@ -40,6 +41,7 @@ class BuildAndroid implements BuildFunction {
 
   @override
   Future<void> call({
+    required String flutter,
     required String flavor,
     required String buildType,
     required String entryPointPath,
@@ -48,6 +50,7 @@ class BuildAndroid implements BuildFunction {
   }) async {
     Printer.printWarning('Android build started');
     return buildAndroidOutput(
+      flutter: flutter,
       flavor: flavor,
       buildType: buildType,
       entryPointPath: entryPointPath,
@@ -63,6 +66,7 @@ class BuildIos implements BuildFunction {
 
   @override
   Future<void> call({
+    required String flutter,
     required String flavor,
     required String buildType,
     required String entryPointPath,
@@ -72,6 +76,7 @@ class BuildIos implements BuildFunction {
   }) async {
     Printer.printWarning('iOS build started');
     return buildIosOutput(
+      flutter: flutter,
       flavor: flavor,
       buildType: buildType,
       entryPointPath: entryPointPath,
