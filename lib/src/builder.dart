@@ -6,6 +6,7 @@ import 'package:process_run/shell.dart';
 import 'package:surf_flutter_ci_cd/src/enums/enums.dart';
 import 'package:surf_flutter_ci_cd/src/util/printer.dart';
 
+/// Процесс сборки Android-артефакта.
 Future<void> buildAndroidOutput({
   required String flavor,
   required String buildType,
@@ -36,13 +37,15 @@ Future<void> buildAndroidOutput({
     await shell.run('fvm flutter pub get');
 
     Printer.printNormal('Build start Android start with flags:');
-    await shell.run('fvm flutter build ${format.format} -t $entryPointPath --flavor $flavor $flags');
+    await shell
+        .run('fvm flutter build ${format.format} -t $entryPointPath --flavor $flavor $flags');
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
   }
 }
 
+/// Процесс сборки iOS артефакта.
 Future<void> buildIosOutput({
   required String flavor,
   required String buildType,
@@ -51,7 +54,8 @@ Future<void> buildIosOutput({
 }) async {
   exitCode = 0;
 
-  Printer.printWarning('Build type: $buildType, Format: ipa, Flavor: $flavor, Target: $entryPointPath, flags: $flags');
+  Printer.printWarning(
+      'Build type: $buildType, Format: ipa, Flavor: $flavor, Target: $entryPointPath, flags: $flags');
 
   try {
     final stdoutController = StreamController<List<int>>();

@@ -1,3 +1,4 @@
+/// Аргументы для команды сборки.
 enum BuildOption {
   flavor(
     name: 'flavor',
@@ -20,12 +21,22 @@ enum BuildOption {
     mandatory: true,
   );
 
+  /// Название аргумента.
   final String name;
+
+  /// Сокращённое азвание аргумента.
   final String abbr;
+
+  /// Подсказка.
   final String help;
+
+  /// Пример аргумента.
   final String valueHelp;
+
+  /// Обязательность аргумента.
   final bool mandatory;
 
+  /// Конструктор.
   const BuildOption({
     required this.name,
     required this.abbr,
