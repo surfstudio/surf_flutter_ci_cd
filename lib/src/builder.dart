@@ -52,8 +52,7 @@ Future<void> buildIosOutput({
 }) async {
   exitCode = 0;
 
-  Printer.printWarning(
-      'Build type: $buildType, Format: ipa, Flavor: $flavor, Target: $entryPointPath, flags: $flags');
+  Printer.printWarning('Build type: $buildType, Format: ipa, Flavor: $flavor, Target: $entryPointPath, flags: $flags');
 
   try {
     final stdoutController = StreamController<List<int>>();

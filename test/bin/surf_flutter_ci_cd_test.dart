@@ -1,13 +1,13 @@
 import 'package:args/args.dart';
 import 'package:test/test.dart';
 
+import '../../bin/core/argument_parser_factory.dart';
 import '../../bin/core/arguments.dart';
 import '../../bin/core/build_config.dart';
 import '../../bin/core/build_function.dart';
 import '../../bin/core/deploy_function.dart';
 import '../../bin/core/function_command.dart';
 import '../../bin/core/message_show.dart';
-import '../../bin/surf_flutter_ci_cd.dart';
 
 const testArgsBuild = ["build", "--env=qa", "--proj=default", "--target=android"];
 const testArgsDeploy = ["deploy", "--env=prod", "--proj=default", "--target=ios", "--deploy-to=tf"];
@@ -27,10 +27,14 @@ void main() {
     );
 
     test('Not complete arguments', () {
-      expect(() => Arguments.parseAndCheck(["deploy", "--proj=default", "--target=ios", "--deploy-to=tf"], parser),
+      expect(
+          () => Arguments.parseAndCheck(
+              ["deploy", "--proj=default", "--target=ios", "--deploy-to=tf"], parser),
           throwsA(isA<ExitException>()));
 
-      expect(() => Arguments.parseAndCheck(["full", "--env=dev", "--proj=default", "--deploy-to=fb"], parser),
+      expect(
+          () => Arguments.parseAndCheck(
+              ["full", "--env=dev", "--proj=default", "--deploy-to=fb"], parser),
           throwsA(isA<ExitException>()));
     });
 
@@ -67,9 +71,12 @@ void main() {
       expect(config.flags,
           '--export-options-plist ios/prodExportOptions.plist --release --tree-shake-icons --split-debug-info --obfuscate');
 
-      expect(() async => await BuildConfig.create('some', 'prod', 'ios'), throwsA(isA<ExitException>()));
-      expect(() async => await BuildConfig.create('default', 'some', 'ios'), throwsA(isA<ExitException>()));
-      expect(() async => await BuildConfig.create('default', 'prod', 'some'), throwsA(isA<ExitException>()));
+      expect(() async => await BuildConfig.create('some', 'prod', 'ios'),
+          throwsA(isA<ExitException>()));
+      expect(() async => await BuildConfig.create('default', 'some', 'ios'),
+          throwsA(isA<ExitException>()));
+      expect(() async => await BuildConfig.create('default', 'prod', 'some'),
+          throwsA(isA<ExitException>()));
     });
 
     test('Build function', () {
