@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:process_run/shell.dart';
-import 'package:surf_flutter_ci_cd/src/util/package_path_converter.dart';
-import 'package:surf_flutter_ci_cd/src/util/printer.dart';
+import 'package:flutter_deployer/src/util/package_path_converter.dart';
+import 'package:flutter_deployer/src/util/printer.dart';
 import 'package:path/path.dart' as path;
+import 'package:process_run/shell.dart';
 
 /// Запуск выгрузки Android артефакта в Firebase.
 Future<void> deployAndroidToFirebase({
@@ -35,7 +35,7 @@ Future<void> deployAndroidToFirebase({
   }
 
   final makefilePath = await PackagePathResolver.resolve(
-    path: 'package:surf_flutter_ci_cd/lib/src/android/',
+    path: 'package:flutter_deployer/lib/src/android/',
   );
 
   // Создание переменных окружения.
@@ -85,8 +85,8 @@ Future<void> deployAndroidToGPC({
   // Путь в котором будет хранится скопированный ключ из [keySource].
   final keyDestination = Directory('${rootPath}android/keystore/');
 
-  final outputJsonFile = await _copyFilesWithExtension(
-      source: keySource, destination: keyDestination, extension: '.json');
+  final outputJsonFile =
+      await _copyFilesWithExtension(source: keySource, destination: keyDestination, extension: '.json');
 
   final jsonPath = '../../android/keystore/${path.basename(outputJsonFile.first.path)}';
 
@@ -105,7 +105,7 @@ Future<void> deployAndroidToGPC({
   final shell = _createShellWithEnvironment(environment);
 
   final makefilePath = await PackagePathResolver.resolve(
-    path: 'package:surf_flutter_ci_cd/lib/src/android/',
+    path: 'package:flutter_deployer/lib/src/android/',
   );
 
   await shell.run('rvm use 3.0.0');
@@ -130,8 +130,7 @@ Future<void> deployIosToTestFlight({
   // Путь в котором будет хранится скопированный ключ из [keySource].
   final keyDestination = Directory('${rootPath}ios/certs/');
 
-  final outputP8File = await _copyFilesWithExtension(
-      source: keySource, destination: keyDestination, extension: '.p8');
+  final outputP8File = await _copyFilesWithExtension(source: keySource, destination: keyDestination, extension: '.p8');
 
   final p8Path = '../../ios/certs/${path.basename(outputP8File.first.path)}';
 
@@ -147,7 +146,7 @@ Future<void> deployIosToTestFlight({
   final shell = _createShellWithEnvironment(environment);
 
   final makefilePath = await PackagePathResolver.resolve(
-    path: 'package:surf_flutter_ci_cd/lib/src/ios/',
+    path: 'package:flutter_deployer/lib/src/ios/',
   );
 
   await shell.run('rvm use 3.0.0');
@@ -179,7 +178,7 @@ Future<void> deployIosToFirebase({
   final shell = _createShellWithEnvironment(environment);
 
   final makefilePath = await PackagePathResolver.resolve(
-    path: 'package:surf_flutter_ci_cd/lib/src/ios/',
+    path: 'package:flutter_deployer/lib/src/ios/',
   );
 
   await shell.run('rvm use 3.0.0');
@@ -196,8 +195,8 @@ Future<String> _getIpaPath(String rootPath) async {
   final ipaDestination = Directory('${rootPath}build/ios/ipa/');
 
   // Копирование ipa файла.
-  final outputIpaFiles = await _copyFilesWithExtension(
-      source: ipaSource, destination: ipaDestination, extension: '.ipa');
+  final outputIpaFiles =
+      await _copyFilesWithExtension(source: ipaSource, destination: ipaDestination, extension: '.ipa');
 
   final ipaPath = '../../build/ios/ipa/${path.basename(outputIpaFiles.first.path)}';
   return ipaPath;
@@ -239,8 +238,7 @@ Future<List<File>> _copyFilesWithExtension({
   required String extension,
   String pattern = '',
 }) async {
-  Printer.printNormal(
-      '''Copy files with extension = $extension and name pattern ${pattern.toLowerCase()} from
+  Printer.printNormal('''Copy files with extension = $extension and name pattern ${pattern.toLowerCase()} from
   ${source.path}
   to
   ${destination.path}''');

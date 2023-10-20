@@ -1,5 +1,5 @@
 import 'package:args/args.dart';
-import 'package:surf_flutter_ci_cd/src/enums/enums.dart';
+import 'package:flutter_deployer/src/enums/enums.dart';
 
 ArgParser createDefaultArgParser() => ArgParser()
   ..addOption(

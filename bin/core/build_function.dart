@@ -1,5 +1,5 @@
-import 'package:surf_flutter_ci_cd/src/util/printer.dart';
-import 'package:surf_flutter_ci_cd/surf_flutter_ci_cd.dart';
+import 'package:flutter_deployer/flutter_deployer.dart';
+import 'package:flutter_deployer/src/util/printer.dart';
 
 import 'message_show.dart';
 

@@ -2,7 +2,7 @@
 
 import 'dart:io';
 
-import 'package:surf_flutter_ci_cd/src/util/printer.dart';
+import 'package:flutter_deployer/src/util/printer.dart';
 
 /// Script for build application.
 /// Need parameter: build type -release or -qa.

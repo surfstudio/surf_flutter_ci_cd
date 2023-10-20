@@ -1,10 +1,9 @@
 import 'dart:io';
 
+import 'package:flutter_deployer/src/util/extensions/directory_x.dart';
+import 'package:flutter_deployer/src/util/package_path_converter.dart';
+import 'package:flutter_deployer/src/util/printer.dart';
 import 'package:process_run/shell_run.dart';
-import 'package:surf_flutter_ci_cd/src/util/extensions/directory_x.dart';
-import 'package:surf_flutter_ci_cd/src/util/package_path_converter.dart';
-
-import 'package:surf_flutter_ci_cd/src/util/printer.dart';
 
 typedef ShellEnvironmentBuilder = ShellEnvironment Function(
   Directory fastlaneDestinationDir,
@@ -26,8 +25,7 @@ class DeployHelper {
       copiedMakefile = await makefile.copy('$platformDirectoryName/Makefile');
 
       final fastlaneDirPath = await PackagePathResolver.resolve(
-        path:
-            'package:surf_flutter_ci_cd/lib/src/$platformDirectoryName/fastlane',
+        path: 'package:flutter_deployer/lib/src/$platformDirectoryName/fastlane',
       );
 
       fastlaneDestinationDir = await _createFastlaneDirectory(
@@ -65,8 +63,7 @@ class DeployHelper {
     String fileName,
   ) async {
     final makeFilePath = await PackagePathResolver.resolve(
-      path:
-          'package:surf_flutter_ci_cd/lib/src/$platformDirectoryName/$fileName',
+      path: 'package:flutter_deployer/lib/src/$platformDirectoryName/$fileName',
     );
 
     final makefile = File(makeFilePath);
@@ -79,8 +76,7 @@ class DeployHelper {
     String platformDirectoryName,
   ) async {
     final fastlaneSourceDir = Directory(sourcePath);
-    final fastlaneDestinationDir = Directory('$platformDirectoryName/fastlane')
-      ..createSync();
+    final fastlaneDestinationDir = Directory('$platformDirectoryName/fastlane')..createSync();
 
     fastlaneSourceDir.copy(fastlaneDestinationDir);
 
@@ -90,7 +86,7 @@ class DeployHelper {
 
 // /// Source file paths should be passed as package paths
 // ///
-// /// For example: ```'package:surf_flutter_ci_cd/lib/src/platform/Gemfile'```
+// /// For example: ```'package:flutter_deployer/lib/src/platform/Gemfile'```
 class DeployHelperSettings {
   // final String sourceGemfilePath;
   // final String sourceMakefilePath;
