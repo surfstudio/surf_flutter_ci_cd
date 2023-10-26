@@ -3,7 +3,7 @@ import 'package:flutter_deployer/src/util/printer.dart';
 import 'package:yaml/yaml.dart';
 
 import 'deploy_secrets.dart';
-import 'message_show.dart';
+import '../message_show.dart';
 
 const _androidTarget = 'android';
 const _iosTarget = 'ios';
@@ -55,6 +55,7 @@ abstract class DeployFunction {
 /// Команда выгрузки Android-артефакта в Firebase.
 class DeployAndroidFB implements DeployFunction {
   const DeployAndroidFB();
+
   @override
   Future<void> call({
     required YamlMap config,
@@ -62,7 +63,7 @@ class DeployAndroidFB implements DeployFunction {
     required String env,
     required DeploySecrets secrets,
   }) {
-    if (secrets.firebaseToken.isEmpty) {
+    if (secrets.firebaseToken == null) {
       Printer.printError('Specify the firebase_token in secrets.yaml for deploy to Firebase.');
       MessageShow.exitWithShowUsage();
     }
@@ -84,6 +85,7 @@ class DeployAndroidFB implements DeployFunction {
 /// Команда выгрузки Android-артефакта в Google Play.
 class DeployAndroidGP implements DeployFunction {
   const DeployAndroidGP();
+
   @override
   Future<void> call({
     required YamlMap config,
@@ -91,16 +93,25 @@ class DeployAndroidGP implements DeployFunction {
     required String env,
     required DeploySecrets secrets,
   }) {
+    if (secrets.googlePlayData == null) {
+      Printer.printError('Specify the googlePlayData in secrets.yaml for deploy to TestFlight.');
+      MessageShow.exitWithShowUsage();
+    }
     final androidConfig = _getAndroidConfig(config, project, env);
     final packageName = androidConfig['deploy']['google_play']['package_name'] as String;
     final flavor = androidConfig['build']['flavor'] as String;
-    return deployAndroidToGPC(packageName: packageName, flavor: flavor);
+    return deployAndroidToGPC(
+      packageName: packageName,
+      flavor: flavor,
+      jsonKeyData: secrets.googlePlayData!,
+    );
   }
 }
 
 /// Команда выгрузки iOS-артефакта в TestFlight.
 class DeployIosTF implements DeployFunction {
   const DeployIosTF();
+
   @override
   Future<void> call({
     required YamlMap config,
@@ -108,14 +119,18 @@ class DeployIosTF implements DeployFunction {
     required String env,
     required DeploySecrets secrets,
   }) {
-    if (secrets.testflightKeyId.isEmpty || secrets.testflightIssuerId.isEmpty) {
+    if (secrets.testflightKeyId == null ||
+        secrets.testflightIssuerId == null ||
+        secrets.testflightKeyData == null) {
       Printer.printError(
-          'Specify the testflight_key_id and testflight_issuer_id in secrets.yaml for deploy to TestFlight.');
+          'Specify the testflight_key_id, testflight_issuer_id and googlePlayData in secrets.yaml for deploy to TestFlight.');
       MessageShow.exitWithShowUsage();
     }
+
     return deployIosToTestFlight(
-      keyId: secrets.testflightKeyId,
-      issuerId: secrets.testflightIssuerId,
+      keyId: secrets.testflightKeyId!,
+      issuerId: secrets.testflightIssuerId!,
+      keyData: secrets.testflightKeyData!,
     );
   }
 }
@@ -131,7 +146,7 @@ class DeployIosFB implements DeployFunction {
     required String env,
     required DeploySecrets secrets,
   }) {
-    if (secrets.firebaseToken.isEmpty) {
+    if (secrets.firebaseToken == null) {
       Printer.printError('Specify the firebase_token in secrets.yaml for deploy to Firebase.');
       MessageShow.exitWithShowUsage();
     }

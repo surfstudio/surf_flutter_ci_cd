@@ -51,16 +51,16 @@ platform :android do
   lane :google_play do
     aab_path = ENV["AAB_PATH"]
     package_name = ENV["PKG_NAME"]
-    json_path = ENV["JSON_PATH"]
+    json_key_data = ENV["JSON_KEY_DATA"]
     puts "FASTLANE AAB_PATH: #{aab_path}"
     puts "FASTLANE PACKAGE_NAME: #{package_name}"
-    puts "FASTLANE JSON PATH: #{json_path}"
+    puts "FASTLANE JSON DATA: #{json_key_data}"
     puts "Google Play Console"
     # Call 'fastlane action upload_to_play_store' for more information.
     upload_to_play_store(
       package_name: "#{package_name}",
       track: "internal",
-      json_key: "#{json_path}",
+      json_key_data: "#{json_key_data}",
       aab: "#{aab_path}",
     )
   end

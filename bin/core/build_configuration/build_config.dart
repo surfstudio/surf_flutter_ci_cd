@@ -1,8 +1,8 @@
 import 'package:flutter_deployer/src/util/printer.dart';
 
-import 'message_show.dart';
-import 'yaml_config_fields.dart';
-import 'yaml_utils.dart';
+import '../message_show.dart';
+import '../yaml_parser/yaml_config_fields.dart';
+import '../yaml_parser/yaml_utils.dart';
 
 /// {@template classdoc}
 /// Описание конфигурации сборки.
@@ -30,11 +30,11 @@ class BuildConfig {
     required this.extension,
   });
 
-  /// Создание конфига из YAML конфигурации для проекта [project], с окружением [environment] для таргета [target].
-  static Future<BuildConfig> create(String project, String environment, String target) async {
+  /// Создание конфига из YAML конфигурации для проекта [project], с окружением [environment] для таргета [platform].
+  static Future<BuildConfig> create(String project, String environment, String platform) async {
     final config = await readYamlConfig();
     final envMap = config[project]?[environment];
-    final buildMap = envMap?[target]?[YamlConfigFields.buildField];
+    final buildMap = envMap?[platform]?[YamlConfigFields.buildField];
 
     final entryPointPath = _readFieldSafely(envMap, YamlConfigFields.filePathField);
     final flavor = _readFieldSafely(buildMap, YamlConfigFields.flavorField);

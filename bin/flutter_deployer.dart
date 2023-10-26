@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:flutter_deployer/src/util/printer.dart';
 
-import 'core/argument_parser_factory.dart';
-import 'core/arguments.dart';
+import 'core/arguments/argument_parser_factory.dart';
+import 'core/arguments/arguments.dart';
+import 'core/deploy_configuration/deploy_secrets.dart';
 import 'core/function_command.dart';
 import 'core/message_show.dart';
 
@@ -19,7 +20,7 @@ void main(List<String> arguments) {
 }
 
 /// Запуск основного процесса.
-void cdProcess(List<String> arguments) {
+Future<void> cdProcess(List<String> arguments) async {
   // Получение пути для вызова flutter.
   final flutterPath = Platform.environment['FLUTTER_ROOT'];
   final flutter = '$flutterPath/bin/flutter';
@@ -31,6 +32,16 @@ void cdProcess(List<String> arguments) {
   // Команда, которая создана после разбора аргументов.
   final command = CommandFunction.create(args.mainCommand);
 
+  // Получены секреты из secrets.yaml и аргументов командной строки.
+  final secrets = await DeploySecrets.create().then((value) => value.overrideByCliArguments(args));
+
   /// Выполнение команды.
-  command(flutter, args.proj, args.env, args.target, args.deployTo);
+  command(CommandFunctionArguments(
+    flutter: flutter,
+    proj: args.proj,
+    env: args.env,
+    platform: args.platform,
+    deployTo: args.deployTo,
+    secrets: secrets,
+  ));
 }

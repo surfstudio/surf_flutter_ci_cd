@@ -1,17 +1,17 @@
 import 'package:args/args.dart';
 import 'package:test/test.dart';
 
-import '../../bin/core/argument_parser_factory.dart';
-import '../../bin/core/arguments.dart';
-import '../../bin/core/build_config.dart';
-import '../../bin/core/build_function.dart';
-import '../../bin/core/deploy_function.dart';
+import '../../bin/core/arguments/argument_parser_factory.dart';
+import '../../bin/core/arguments/arguments.dart';
+import '../../bin/core/build_configuration/build_config.dart';
+import '../../bin/core/build_configuration/build_function.dart';
+import '../../bin/core/deploy_configuration/deploy_function.dart';
 import '../../bin/core/function_command.dart';
 import '../../bin/core/message_show.dart';
 
-const testArgsBuild = ["build", "--env=qa", "--proj=default", "--target=android"];
-const testArgsDeploy = ["deploy", "--env=prod", "--proj=default", "--target=ios", "--deploy-to=tf"];
-const testArgsFull = ["full", "--env=dev", "--proj=default", "--target=ios", "--deploy-to=fb"];
+const testArgsBuild = ["build", "--env=qa", "--proj=default", "--platform=android"];
+const testArgsDeploy = ["deploy", "--env=prod", "--proj=default", "--platform=ios", "--deploy-to=tf"];
+const testArgsFull = ["full", "--env=dev", "--proj=default", "--platform=ios", "--deploy-to=fb"];
 
 void main() {
   group('CICD Testing', () {
@@ -29,7 +29,7 @@ void main() {
     test('Not complete arguments', () {
       expect(
           () => Arguments.parseAndCheck(
-              ["deploy", "--proj=default", "--target=ios", "--deploy-to=tf"], parser),
+              ["deploy", "--proj=default", "--platform=ios", "--deploy-to=tf"], parser),
           throwsA(isA<ExitException>()));
 
       expect(
@@ -43,7 +43,7 @@ void main() {
       expect(args.mainCommand, 'full');
       expect(args.env, 'dev');
       expect(args.proj, 'default');
-      expect(args.target, 'ios');
+      expect(args.platform, 'ios');
       expect(args.deployTo, 'fb');
     });
 

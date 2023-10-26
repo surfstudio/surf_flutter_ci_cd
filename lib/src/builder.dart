@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter_deployer/src/enums/enums.dart';
+import 'package:flutter_deployer/flutter_deployer.dart';
 import 'package:flutter_deployer/src/util/printer.dart';
 import 'package:process_run/shell.dart';
 

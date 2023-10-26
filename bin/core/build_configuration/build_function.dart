@@ -1,7 +1,7 @@
 import 'package:flutter_deployer/flutter_deployer.dart';
 import 'package:flutter_deployer/src/util/printer.dart';
 
-import 'message_show.dart';
+import '../message_show.dart';
 
 const _androidTarget = 'android';
 const _iosTarget = 'ios';
