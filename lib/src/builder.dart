@@ -8,6 +8,7 @@ import 'package:surf_flutter_ci_cd/src/util/printer.dart';
 
 /// Процесс сборки Android-артефакта.
 Future<void> buildAndroidOutput({
+  required String flutter,
   required String flavor,
   required String buildType,
   required String entryPointPath,
@@ -27,18 +28,14 @@ Future<void> buildAndroidOutput({
     stdoutController.stream.transform(utf8.decoder).listen(stdout.write);
     stderrController.stream.transform(utf8.decoder).listen(stderr.write);
 
-    Printer.printNormal('Activate fvm');
-    await shell.run('dart pub global activate fvm');
-
     Printer.printNormal('Flutter clean');
-    await shell.run('fvm flutter clean');
+    await shell.run('$flutter clean');
 
     Printer.printNormal('Flutter pub get');
-    await shell.run('fvm flutter pub get');
+    await shell.run('$flutter pub get');
 
     Printer.printNormal('Build start Android start with flags:');
-    await shell
-        .run('fvm flutter build ${format.format} -t $entryPointPath --flavor $flavor $flags');
+    await shell.run('$flutter build ${format.format} -t $entryPointPath --flavor $flavor $flags');
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);
@@ -47,6 +44,7 @@ Future<void> buildAndroidOutput({
 
 /// Процесс сборки iOS артефакта.
 Future<void> buildIosOutput({
+  required String flutter,
   required String flavor,
   required String buildType,
   required String entryPointPath,
@@ -54,8 +52,7 @@ Future<void> buildIosOutput({
 }) async {
   exitCode = 0;
 
-  Printer.printWarning(
-      'Build type: $buildType, Format: ipa, Flavor: $flavor, Target: $entryPointPath, flags: $flags');
+  Printer.printWarning('Build type: $buildType, Format: ipa, Flavor: $flavor, Target: $entryPointPath, flags: $flags');
 
   try {
     final stdoutController = StreamController<List<int>>();
@@ -66,17 +63,14 @@ Future<void> buildIosOutput({
     stdoutController.stream.transform(utf8.decoder).listen(stdout.write);
     stderrController.stream.transform(utf8.decoder).listen(stderr.write);
 
-    Printer.printNormal('Activate fvm');
-    await shell.run('dart pub global activate fvm');
-
     Printer.printNormal('Flutter clean');
-    await shell.run('fvm flutter clean');
+    await shell.run('$flutter clean');
 
     Printer.printNormal('Flutter pub get');
-    await shell.run('fvm flutter pub get');
+    await shell.run('$flutter pub get');
 
     Printer.printNormal('Build start Android start with flags:');
-    await shell.run('fvm flutter build ipa -t $entryPointPath --flavor $flavor $flags');
+    await shell.run('$flutter build ipa -t $entryPointPath --flavor $flavor $flags');
   } on Object catch (e) {
     Printer.printError(e.toString());
     exit(1);

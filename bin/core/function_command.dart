@@ -13,7 +13,7 @@ const _buildAndDeployCommand = 'full';
 
 /// Общая команда, которая определяет в зависимости от вызова, какую команду требуется вызвать.
 abstract class CommandFunction {
-  Future<void> call(String proj, String env, String target, String? deployTo);
+  Future<void> call(String flutter, String proj, String env, String target, String? deployTo);
 
   /// Создаёт требуемую команду, в зависимости от переданной команды в параметре [mainCommand].
   factory CommandFunction.create(String mainCommand) {
@@ -35,17 +35,19 @@ abstract class CommandFunction {
 class BuildCommand implements CommandFunction {
   @override
   Future<void> call(
+    String flutter,
     String proj,
     String env,
     String target,
     // Не используется. Передается для совпадения сигнатур у всех основных команд.
     String? deployTo,
   ) =>
-      build(proj, env, target);
+      build(flutter, proj, env, target);
 }
 
 /// Вызов сборки приложения через соответствующую функцию.
 Future<void> build(
+  String flutter,
   String proj,
   String env,
   String target,
@@ -57,6 +59,7 @@ Future<void> build(
   final buildFunction = BuildFunction.create(target);
 
   await buildFunction(
+    flutter: flutter,
     flavor: buildConfig.flavor,
     buildType: env,
     entryPointPath: buildConfig.entryPointPath,
@@ -69,6 +72,8 @@ Future<void> build(
 class DeployCommand implements CommandFunction {
   @override
   Future<void> call(
+    // Не используется. Передается для совпадения сигнатур у всех основных команд.
+    String flutter,
     String proj,
     String env,
     String target,
@@ -104,6 +109,7 @@ Future<void> deploy(
 class BuildAndDeployCommand implements CommandFunction {
   @override
   Future<void> call(
+    String flutter,
     String proj,
     String env,
     String target,
@@ -113,17 +119,18 @@ class BuildAndDeployCommand implements CommandFunction {
       Printer.printError('Please specify the flag deploy.');
       throw ExitException();
     }
-    return buildAndDeploy(proj, env, target, deployTo);
+    return buildAndDeploy(flutter, proj, env, target, deployTo);
   }
 }
 
 /// Вызов сборки приложения и выгрузки через соответствующие функции.
 Future<void> buildAndDeploy(
+  String flutter,
   String proj,
   String env,
   String target,
   String deployTo,
 ) async {
-  await build(proj, env, target);
+  await build(flutter, proj, env, target);
   await deploy(proj, env, target, deployTo);
 }
