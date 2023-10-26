@@ -1,5 +1,5 @@
-import 'package:surf_flutter_ci_cd/src/deployer.dart';
-import 'package:surf_flutter_ci_cd/src/util/printer.dart';
+import 'package:flutter_deployer/src/deployer.dart';
+import 'package:flutter_deployer/src/util/printer.dart';
 import 'package:yaml/yaml.dart';
 
 import 'deploy_secrets.dart';

@@ -1,4 +1,4 @@
-name: surf_flutter_ci_cd
+name: flutter_deployer
 description: A sample command-line application.
 version: 0.0.2
 

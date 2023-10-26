@@ -2,9 +2,9 @@
 
 import 'dart:io';
 
-import 'package:surf_flutter_ci_cd/src/enums/android/apk_prefix.dart';
-import 'package:surf_flutter_ci_cd/src/output_builder/i_output_builder.dart';
-import 'package:surf_flutter_ci_cd/src/util/printer.dart';
+import 'package:flutter_deployer/src/enums/android/apk_prefix.dart';
+import 'package:flutter_deployer/src/output_builder/i_output_builder.dart';
+import 'package:flutter_deployer/src/util/printer.dart';
 
 const _apkPath = 'build/app/outputs/flutter-apk/';
 
@@ -29,8 +29,7 @@ class ApkBuilder implements IOutputBuilder {
     required String flags,
     required String projectName,
   }) async {
-    final jenkinsArchiveArtifactsLocation =
-        'build/app/outputs/apk/$flavor/release/';
+    final jenkinsArchiveArtifactsLocation = 'build/app/outputs/apk/$flavor/release/';
 
     await _buildApk(
       flavor: flavor,
@@ -111,8 +110,7 @@ class AppBundleBuilder implements IOutputBuilder {
     required String projectName,
     required String flags,
   }) async {
-    final jenkinsArchiveArtifactsLocation =
-        'build/app/outputs/bundle/$flavor/release/';
+    final jenkinsArchiveArtifactsLocation = 'build/app/outputs/bundle/$flavor/release/';
 
     await _buildAppBundle(
       buildType: buildType,
@@ -140,16 +138,7 @@ class AppBundleBuilder implements IOutputBuilder {
 
     final result = await Process.run(
       'fvm',
-      [
-        'flutter',
-        'build',
-        'appbundle',
-        '-t',
-        entryPointPath,
-        '--flavor',
-        flavor,
-        flags
-      ],
+      ['flutter', 'build', 'appbundle', '-t', entryPointPath, '--flavor', flavor, flags],
     );
     stdout.write(result.stdout);
     stderr.write(result.stderr);
@@ -180,6 +169,5 @@ class AppBundleBuilder implements IOutputBuilder {
     );
   }
 
-  String _appBundlePath(String flavor) =>
-      'build/app/outputs/bundle/${flavor}Release/';
+  String _appBundlePath(String flavor) => 'build/app/outputs/bundle/${flavor}Release/';
 }

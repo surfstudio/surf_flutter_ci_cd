@@ -8,7 +8,7 @@
             "name": "Dart",
             "type": "dart",
             "request": "launch",
-            "program": "bin/surf_flutter_ci_cd.dart",
+            "program": "bin/flutter_deployer.dart",
             "args": [
                 "build",
                 "--env=qa",

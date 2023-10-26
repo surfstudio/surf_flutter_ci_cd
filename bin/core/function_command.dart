@@ -1,4 +1,4 @@
-import 'package:surf_flutter_ci_cd/src/util/printer.dart';
+import 'package:flutter_deployer/src/util/printer.dart';
 
 import 'build_config.dart';
 import 'build_function.dart';

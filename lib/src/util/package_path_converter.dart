@@ -9,8 +9,7 @@ class PackagePathResolver {
     final uri = Uri.parse(path);
     final resolvedUri = await Isolate.resolvePackageUri(uri);
 
-    final convertedFilePath =
-        resolvedUri!.toFilePath(windows: Platform.operatingSystem == 'windows');
+    final convertedFilePath = resolvedUri!.toFilePath(windows: Platform.operatingSystem == 'windows');
 
     var fixedPath = convertedFilePath;
     final regExp = RegExp(r'\blib/');
@@ -26,6 +25,5 @@ class PackagePathResolver {
     return fixedPath;
   }
 
-  static Future<String> packagePath() =>
-      resolve(path: 'package:surf_flutter_ci_cd/');
+  static Future<String> packagePath() => resolve(path: 'package:flutter_deployer/');
 }

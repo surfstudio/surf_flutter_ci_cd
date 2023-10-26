@@ -8,7 +8,7 @@ class MessageShow {
   }
 
   static const _usage =
-      'Usage: flutter pub run surf_flutter_ci_cd [build|deploy|full] --env=<environment> --proj=<project> --target=<target platform>';
+      'Usage: flutter pub run flutter_deployer [build|deploy|full] --env=<environment> --proj=<project> --target=<target platform>';
 }
 
 /// Ошибка, которая приводит к закрытию программы.
