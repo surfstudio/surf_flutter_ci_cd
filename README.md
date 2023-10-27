@@ -14,13 +14,18 @@ dev_dependencies:
 1. Открыть терминал в корне проекта.
 2. Выполнить команду в формате:\
 `
-fvm flutter pub run flutter_deployer [тип] --env=[окружение] --proj=[проект] --target=[платформа] --deploy-to=[сервис для доставки]
+fvm flutter pub run flutter_deployer [тип] --env=[окружение] --project=[проект] --paltform=[платформа] --deploy-to=[сервис для доставки]
 `, где:\
 `[тип]` - build(сборка), deploy(деплой), full(сборка и деплой);\
 `[окружение]` - описанное в cd.yaml;\
 `[проект]` - описанный в cd.yaml;\
 `[платформа]` - android, ios;\
-`[сервис для доставки]` - fb(Firebase, поддерживается Android и iOS), tf(Testflight - только iOS), gp(Google Play Console internal testing - только Android);
+`[сервис для доставки]` - fb(Firebase, поддерживается Android и iOS), tf(Testflight - только iOS), gp(Google Play Console internal testing - только Android);\
+`[firebase-token]` - токен для авторизации в firebase;\
+`[testflight-key-id]` - id ключа для доступа к app connect через api;\
+`[testflight-issuer-id]` - id issuer для ключа;\
+`[testflight-data]` - содержимое ключа в виде строки;\
+`[google-play-data]` - содержимое json файла для авторизации в google;
     
 ```
 Для --target=ios всегда собирается ipa.
