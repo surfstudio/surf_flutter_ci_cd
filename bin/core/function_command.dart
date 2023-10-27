@@ -107,7 +107,6 @@ Future<void> _deploy(CommandFunctionArguments arguments) async {
   Printer.printNormal(
       'Deploying ${arguments.proj} for ${arguments.platform} in ${arguments.env} environment and deploy to ${arguments.deployTo}.');
 
-  final secrets = await DeploySecrets.create();
   final config = await readYamlConfig();
 
   final deployTo = arguments.deployTo;
@@ -121,6 +120,6 @@ Future<void> _deploy(CommandFunctionArguments arguments) async {
     config: config,
     env: arguments.env,
     project: arguments.proj,
-    secrets: secrets,
+    secrets: arguments.secrets,
   );
 }

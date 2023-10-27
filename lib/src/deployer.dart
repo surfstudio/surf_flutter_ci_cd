@@ -60,11 +60,11 @@ Future<void> deployAndroidToGPC({
   required String jsonKeyData,
 }) async {
   // Путь хранения собранного AppBundle файла.
-  final source = Directory('${Directory.current.path}/build/app/outputs/bundle/');
+  final source = Directory(path.join(Directory.current.path, 'build', 'app', 'outputs', 'bundle'));
   // Путь до папки lib/ пакета внутри основного проекта.
   final rootPath = await PackagePathResolver.packagePath();
   // Путь в котором будет хранится скопированные данные из [source]
-  final destination = Directory('${rootPath}build/app/outputs/bundle/');
+  final destination = Directory(path.join(rootPath, 'build', 'app', 'outputs', 'bundle'));
 
   final outputAppFiles = await _copyFilesWithExtension(
     source: source,
@@ -73,8 +73,8 @@ Future<void> deployAndroidToGPC({
     pattern: flavor,
   );
 
-  final appPath = '../../build/app/outputs/bundle/${path.basename(outputAppFiles.first.path)}';
-
+  final appPath = path.join(
+      '..', '..', 'build', 'app', 'outputs', 'bundle', path.basename(outputAppFiles.first.path));
   await for (final file in destination.list(recursive: true)) {
     Printer.printSuccess('AAB file path ${file.path}');
   }
@@ -231,7 +231,8 @@ Future<List<File>> _copyFilesWithExtension({
     if (!(name.contains(pattern.toLowerCase()))) continue;
 
     final sourceFile = File(entity.path);
-    final destinationFile = File('${destination.path}/${sourceFile.path.split('/').last}');
+
+    final destinationFile = File('${destination.path}/${path.basename(entity.path)}');
     final outputFile = await sourceFile.copy(destinationFile.path);
     outputFiles.add(outputFile);
   }

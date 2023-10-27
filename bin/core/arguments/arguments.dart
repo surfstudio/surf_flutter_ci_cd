@@ -64,7 +64,8 @@ class Arguments {
         throw ExitException();
       }
       return args;
-    } on Object catch (_) {
+    } on Object catch (e) {
+      print(e);
       throw ExitException();
     }
   }

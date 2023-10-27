@@ -1,39 +1,42 @@
 enum LibArgumentTypes {
   /// Флаг используемого окружения.
-  environment._('evn', 'e', 'Environment name'),
+  environment._('env', 'Environment name', 'e'),
 
   /// Флаг указания используемого проекта.
-  project._('project', 'pr', 'Project name'),
-
-  /// Флаг используемой плафтормы.
-  platform._('platform', 'pl', 'Target platform: android|ios'),
+  project._('project', 'Project name', 'p'),
 
   /// Флаг указания метода выгрузки артефакта.
-  deployTo._('deploy-to', 'd', 'Deploy to service fb|tf|gp'),
+  deployTo._('deploy-to', 'Deploy to service fb|tf|gp', 'd'),
+
+  /// Флаг используемой плафтормы.
+  platform._('platform', 'Target platform: android|ios'),
 
   /// Токен Firebase авторизации.
-  firebaseToken._('firebase-token', 'fb', 'Authorization token for firebase app distribution'),
+  firebaseToken._('firebase-token', 'Authorization token for firebase app distribution'),
 
   /// Флаг для передачи testflight key id.
-  testflightKeyId._('testflight-key-id', 'tfk', 'Testflight key id'),
+  testflightKeyId._('testflight-key-id', 'Testflight key id'),
 
   /// Флаг для передачи testflight issuer id.
-  testflightIssuerId._('testflight-issuer-id', 'tfi', 'Testflight issuer id'),
+  testflightIssuerId._('testflight-issuer-id', 'Testflight issuer id'),
 
   /// Флаг для передачи testflight key raw data.
-  testflightKeyData._('testflight-data', 'tfd', 'Testflight key raw data'),
+  testflightKeyData._('testflight-data', 'Testflight key raw data'),
 
   /// Флаг для передачи содержимого json ключа для выгрузки приложения в google play.
   googlePlayData._(
     'google-play-data',
-    'gpd',
     'Raw data of google play service account json, used to authenticate with Google',
   ),
   ;
 
   final String flag;
-  final String abbr;
   final String hint;
+  final String? abbr;
 
-  const LibArgumentTypes._(this.flag, this.abbr, this.hint);
+  const LibArgumentTypes._(
+    this.flag,
+    this.hint, [
+    this.abbr,
+  ]);
 }
